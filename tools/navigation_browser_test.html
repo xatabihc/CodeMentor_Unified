@@ -1,0 +1,43 @@
+<!doctype html><html lang="ru"><meta charset="utf-8"><title>CodeMentor navigation browser regression</title>
+<style>body{margin:0}iframe{display:block;border:0}pre{white-space:pre-wrap}</style>
+<pre id="report" data-status="running">Running browser layout checks…</pre>
+<script>
+(async()=>{
+ const results=[];
+ const check=(condition,message)=>{if(!condition)throw Error(message)};
+ const settle=()=>new Promise(resolve=>setTimeout(resolve,100));
+ for(const width of [360,390,412])for(const mode of ['native-container','pwa-safe-area']){
+  const frame=document.createElement('iframe');frame.style.width=width+'px';frame.style.height='844px';
+  const ready=new Promise(resolve=>frame.onload=resolve);frame.src='../www/index.html';document.body.append(frame);await ready;
+  const doc=frame.contentDocument,win=frame.contentWindow,root=doc.documentElement;
+  const safe={top:32,left:0,right:0,bottom:24};
+  function size(w,h){
+   const native=mode==='native-container';
+   frame.style.width=(w-(native?safe.left+safe.right:0))+'px';
+   frame.style.height=(h-(native?safe.top+safe.bottom:0))+'px';
+   for(const edge of ['top','left','right','bottom'])root.style.setProperty('--cm-safe-'+edge,(native?0:safe[edge])+'px');
+  }
+  function button(id){const rect=doc.getElementById(id).getBoundingClientRect();check(rect.width>=54&&rect.height>=54,id+' target below 54x54');return rect}
+  async function menu(){
+   const top=mode==='native-container'?0:safe.top;
+   const open=button('openNav');check(open.top>=top+10,'Open button overlaps safe top');
+   check(open.right<=win.innerWidth-(mode==='native-container'?0:safe.right),'Open button overflows viewport');
+   doc.getElementById('openNav').click();await settle();
+   const sidebar=doc.getElementById('sidebar');check(sidebar.classList.contains('show'),'Menu did not open');
+   check(sidebar.getBoundingClientRect().top>=top,'Sidebar overlaps safe top');
+   sidebar.scrollTop=sidebar.scrollHeight;await settle();
+   const close=button('closeNav');check(close.top>=top&&close.bottom<=win.innerHeight,'Close button lost while scrolling');
+   doc.getElementById('closeNav').click();check(!sidebar.classList.contains('show'),'Menu did not close');
+   check(doc.getElementById('openNav').getAttribute('aria-expanded')==='false','Expanded state stale');
+  }
+  size(width,844);await settle();await menu();
+  win.scrollTo(0,250);await settle();await menu();
+  const editor=doc.getElementById('editor');const draft=editor.value;editor.focus({preventScroll:true});
+  // A viewport resize models the geometric effect; this is not a real Android IME test.
+  size(width,300);await settle();check(doc.activeElement===editor,'Resize cleared editor focus');check(editor.value===draft,'Resize changed draft');await menu();
+  safe.left=36;safe.top=24;safe.bottom=16;size(844,width);await settle();await menu();
+  results.push({width,mode,portrait:true,scrolled:true,keyboardResizeModel:true,landscapeCutout:true});frame.remove();
+ }
+ const report=document.getElementById('report');report.dataset.status='passed';report.textContent=JSON.stringify({ok:true,results},null,2);
+})().catch(error=>{const report=document.getElementById('report');report.dataset.status='failed';report.textContent=error.stack||String(error)});
+</script></html>

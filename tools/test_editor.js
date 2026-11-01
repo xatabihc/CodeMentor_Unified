@@ -1,0 +1,11 @@
+const assert=require('assert');require('../www/editor.js');
+const {edit}=CodeMentorEditor;
+assert.deepEqual(edit('if n == 0:',10,10,'Enter'),{value:'if n == 0:\n    ',start:15,end:15});
+assert.deepEqual(edit('    print(1)',12,12,'Enter'),{value:'    print(1)\n    ',start:17,end:17});
+assert.equal(edit('print',5,5,'(').value,'print()');
+assert.equal(edit('print()',6,6,')').start,7);
+assert.deepEqual(edit('name',0,4,'['),{value:'[name]',start:1,end:5});
+assert.equal(edit('abc',1,2,'Tab').value,'a    c');
+assert.equal(edit('sql:',4,4,'Enter',false),null);
+assert.equal(edit('',0,0,'Unidentified'),null);
+console.log('PASS editor indentation, pairs, selections, Tab and unsupported IME keys');

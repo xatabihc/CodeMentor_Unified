@@ -1,0 +1,35 @@
+# Local settings and credentials
+.idea/
+.vscode/
+.agents/
+.codex/
+.aws/
+.env
+.env.*
+!.env.example
+**/local.properties
+*.jks
+*.keystore
+*.pem
+*.key
+# Build outputs and caches
+.gradle/
+**/.gradle/
+**/build/
+*.apk
+*.aab
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+# Personal progress and databases
+*.sqlite*
+*.db
+*.db-*
+codementor-*progress*.json
+progress*.json
+backups/
+
+.gradle-local/
+.test-tmp/

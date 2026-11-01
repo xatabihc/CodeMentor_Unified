@@ -1,0 +1,29 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.codementor.offline'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.codementor.offline'
+        minSdk 26
+        targetSdk 35
+        versionCode 211
+        versionName '2.1.0-dev-nav1'
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+dependencies { implementation 'androidx.webkit:webkit:1.12.1' }
+
+// Always package the current shared frontend, including builds launched from Studio.
+tasks.register('exportCourses', Exec) {
+    workingDir rootProject.file('..')
+    commandLine providers.gradleProperty('pythonExecutable').orElse('python3').get(), 'tools/export_courses.py'
+    inputs.files(fileTree(rootProject.file('../curriculum_source')) { include '**/*.py', '**/*.json' })
+    inputs.file rootProject.file('../tools/export_courses.py')
+    outputs.file rootProject.file('../www/lessons.js')
+}
+tasks.register('syncWebAssets', Sync) {
+    dependsOn 'exportCourses'
+    from rootProject.file('../www')
+    into layout.projectDirectory.dir('src/main/assets')
+}
+tasks.named('preBuild').configure { dependsOn 'syncWebAssets' }

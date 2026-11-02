@@ -7,7 +7,7 @@
    const exercise=lesson.exercises[index];
    const el=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n};
    const heading=el('h3',`Упражнение ${index+1} из ${lesson.exercises.length}`),task=el('p',exercise.task);
-   const status=el('p',allowed?'Режим «Я решаю сам». Числа вводи без округления. Допуск: 10⁻⁸ + 10⁻⁸ × |верное значение|. Пустая ячейка не равна нулю.':'Сначала выполни упражнения предыдущего урока. Теорию можно читать свободно.');
+   const status=el('p',allowed?(exercise.precision!==undefined?`Режим «Я решаю сам». Округли до ${exercise.precision} знаков после запятой; абсолютный допуск ${exercise.tolerance.absolute}.`:'Режим «Я решаю сам». Числа вводи без округления. Допуск: 10⁻⁸ + 10⁻⁸ × |верное значение|. Пустая ячейка не равна нулю.'):'Сначала выполни упражнения предыдущего урока. Теорию можно читать свободно.');
    status.setAttribute('aria-live','polite');host.append(heading,task,status);
    let answer=null;try{answer=JSON.parse(rec(exercise.id).draft??'null')}catch(e){}
    const area=el('div');area.className='answer-area';host.append(area);

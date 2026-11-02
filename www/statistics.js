@@ -34,7 +34,7 @@
    }
    input.addEventListener('input',calculate);bins.addEventListener('input',calculate);
    box.append(label,binLabel,output,graph,el('p','Интервалы одинаковой ширины; правая граница включена только в последний интервал. Для одинаковых чисел показан один интервал ширины 1. Это учебный калькулятор; вывод округлён до 7 значащих цифр.'));
-   host.append(box);calculate();
+   host.append(box);calculate();root.CodeMentorStatisticsAdvanced?.mount(host,{rec,setRec});
  }
  root.CodeMentorStatistics={describe,mount};
 })(typeof window==='undefined'?globalThis:window);

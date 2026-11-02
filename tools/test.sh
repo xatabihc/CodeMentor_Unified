@@ -17,6 +17,8 @@ python3 tools/test_math_content.py
 node tools/test_math.js
 python3 tools/algebra_oracle.py | node tools/test_algebra.js --stdin
 node tools/test_statistics.js
+node tools/test_c2.js
+node --check www/statistics-advanced.js
 node --check www/math-ui.js
 node tools/test_progress.js
 node tools/test_app_storage.js

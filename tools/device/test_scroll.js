@@ -3,7 +3,8 @@ const {execFileSync}=require('child_process'),fs=require('fs'),assert=require('a
 const adb='/home/xatabihc/Android/Sdk/platform-tools/adb';
 const run=(...args)=>execFileSync(adb,args,{encoding:'utf8',timeout:20000});
 (async()=>{
- run('shell','am','start','-n','com.codementor.offline/.MainActivity');await pause(800);
+ run('shell','input','keyevent','KEYCODE_WAKEUP');run('shell','wm','dismiss-keyguard');run('shell','am','start','-n','com.codementor.offline/.MainActivity');await pause(800);
+ const windows=run('shell','dumpsys','window');const focus=windows.split('\n').find(l=>l.includes('mCurrentFocus='))||'';assert(focus.includes('com.codementor.offline'),'Device is locked or another window covers the app; physical unlock required');
  const pid=run('shell','pidof','com.codementor.offline').trim().split(' ')[0];
  const port=run('forward','tcp:0','localabstract:webview_devtools_remote_'+pid).trim();
  const targets=await(await fetch('http://127.0.0.1:'+port+'/json')).json();const c=await connect(targets.find(t=>t.type==='page').webSocketDebuggerUrl),ev=c.evaluate;
@@ -17,7 +18,7 @@ const run=(...args)=>execFileSync(adb,args,{encoding:'utf8',timeout:20000});
   const bounds=await ev('({w:innerWidth,h:innerHeight,dpr:devicePixelRatio})');
   const size=run('shell','wm','size').match(/Physical size: (\d+)x(\d+)/);assert(size,'Unknown screen size');const screenW=+size[1],screenH=+size[2];
   for(const [course,track,lesson] of [[0,'path','path01'],[0,'python','py01'],[0,'mooc',null],[0,'debug',null],[0,'projects',null],[0,'linux',null],[0,'sql',null],[0,'advanced',null],[1,'linear-algebra','la-foundation-02'],[2,'statistics','st-foundation-01'],[1,'linear-algebra','la-b2-05'],[1,'linear-algebra','la-b2-14'],[1,'linear-algebra','la-b2-19'],[1,'linear-algebra','la-b2-21']]){
-   await ev(`document.querySelectorAll('#courses button')[${course}].click();document.querySelector('[data-track="${track}"]').click();${lesson?`document.querySelector('[data-lesson-id="${lesson}"]').click();`:''}if(${course}===2){document.querySelector('#mathPractice details').open=true;const bins=document.querySelector('#mathPractice input[type=range]');bins.value=20;bins.dispatchEvent(new Event('input'));}scrollTo(0,0)`);await pause(250);
+   await ev(`document.querySelectorAll('#courses button')[${course}].click();document.querySelector('[data-track="${track}"]').click();${lesson?`document.querySelector('[data-lesson-id="${lesson}"]').click();`:''}if(${course}===2){document.querySelectorAll('#mathPractice details').forEach(d=>d.open=true);const bins=document.querySelector('#mathPractice input[type=range]');bins.value=20;bins.dispatchEvent(new Event('input'));}scrollTo(0,0)`);await pause(250);
    for(let i=0;i<18;i++){run('shell','input','swipe',String(Math.round(screenW*.9)),String(Math.round(screenH*.8)),String(Math.round(screenW*.9)),String(Math.round(screenH*.25)),'180');await pause(80);if(await ev("document.getElementById('exportQuick').getBoundingClientRect().bottom<=innerHeight"))break;}
    const reached=await ev("(()=>{const r=document.getElementById('exportQuick').getBoundingClientRect();return scrollY>0&&r.top>=0&&r.bottom<=innerHeight})()");if(!reached){const shot=await c.send('Page.captureScreenshot');fs.writeFileSync(folder+'/failure.png',Buffer.from(shot.data,'base64'));console.log(await ev('({height:innerHeight,width:innerWidth,y:scrollY,root:document.scrollingElement.scrollHeight,nav:document.documentElement.className})'));fs.writeFileSync(folder+'/native-failure.png',execFileSync(adb,['exec-out','screencap','-p']));}assert(reached,'Real swipes did not reach end of '+lesson);
    assert(await ev('document.documentElement.scrollWidth<=innerWidth+1'),'Page overflows');

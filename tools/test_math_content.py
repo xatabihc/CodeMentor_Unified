@@ -24,7 +24,7 @@ print('PASS independent mathematics calculations, 18 stable exercises, sequentia
 
 import statistics
 operations={'count':len,'frequency':lambda a:a.count(4),'mean':statistics.mean,'median':statistics.median,'mode':statistics.mode,'range':lambda a:max(a)-min(a)}
-stats=[l for l in all_items if l['track']=='statistics']
+stats=[l for l in all_items if l['id'].startswith('st-foundation-')]
 assert len(stats)==7
 for i,l in enumerate(stats):
  assert l['prerequisites']==([stats[i-1]['id']] if i else [])

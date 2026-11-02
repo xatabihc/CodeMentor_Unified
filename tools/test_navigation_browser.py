@@ -20,7 +20,7 @@ try:
         '--disable-dev-shm-usage','--allow-file-access-from-files',
         '--user-data-dir='+str(work/'profile'),'--window-size=1200,1000',
         '--virtual-time-budget=15000','--dump-dom',
-        (root/'tools/navigation_browser_test.html').as_uri()],
+        (root/'tools'/(sys.argv[1] if len(sys.argv)>1 else 'navigation_browser_test.html')).as_uri()],
         text=True,capture_output=True,timeout=35)
 except subprocess.TimeoutExpired:
     print('Browser timed out; layout checks NOT VERIFIED')
@@ -33,4 +33,4 @@ if result.returncode:
 if 'data-status="passed"' not in result.stdout:
     print('Browser layout checks FAILED or incomplete; see',work/'result.html')
     sys.exit(1)
-print('PASS actual browser layout at 360/390/412: native/PWA, scroll, viewport shrink, landscape')
+print('PASS actual browser: '+(sys.argv[1] if len(sys.argv)>1 else 'layout at 360/390/412: native/PWA, scroll, viewport shrink, landscape'))

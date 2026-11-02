@@ -11,7 +11,7 @@
      const selected=lessons.filter(l=>courseForTrack(l.track)===course.id&&(l.curriculumLevel??(l.track==='path'?0:l.track==='advanced'?4:2))===index);
      const modules=new Map();
      for(const lesson of selected){const id=lesson.track+':'+(lesson.module||'Практика');if(!modules.has(id))modules.set(id,{id,title:lesson.module||lesson.track,lessons:[]});
-       modules.get(id).lessons.push({...lesson,exercises:[{id:lesson.id,checker:lesson.checking?.mode||'unavailable',prerequisites:lesson.prerequisites||[]}]});}
+       modules.get(id).lessons.push({...lesson,exercises:lesson.exercises||[{id:lesson.id,checker:lesson.checking?.mode||'unavailable',prerequisites:lesson.prerequisites||[]}]});}
      return {id:course.id+':level:'+index,title,modules:[...modules.values()]};
    })}));
  }

@@ -6,8 +6,8 @@ android {
         applicationId 'com.codementor.offline'
         minSdk 26
         targetSdk 35
-        versionCode 300
-        versionName '3.0.0-dev-a1'
+        versionCode 301
+        versionName '3.0.0-dev-b1'
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
@@ -19,7 +19,7 @@ tasks.register('exportCourses', Exec) {
     commandLine providers.gradleProperty('pythonExecutable').orElse('python3').get(), 'tools/export_courses.py'
     inputs.files(fileTree(rootProject.file('../curriculum_source')) { include '**/*.py', '**/*.json' })
     inputs.file rootProject.file('../tools/export_courses.py')
-    outputs.file rootProject.file('../www/lessons.js')
+    outputs.files rootProject.file('../www/lessons.js'), rootProject.file('../www/math-lessons.js')
 }
 tasks.register('syncWebAssets', Sync) {
     dependsOn 'exportCourses'

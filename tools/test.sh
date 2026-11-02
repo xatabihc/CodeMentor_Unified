@@ -13,6 +13,9 @@ javac -d .test-tmp/native-navigation android-studio/app/src/main/java/com/codeme
 java -cp .test-tmp/native-navigation com.codementor.offline.SafeAreaTest
 python3 tools/test_apk_assets.py
 node tools/test_learning.js
+python3 tools/test_math_content.py
+node tools/test_math.js
+node --check www/math-ui.js
 node tools/test_progress.js
 node tools/test_app_storage.js
 python3 tools/test_legacy_progress.py

@@ -1,0 +1,29 @@
+<!doctype html><html lang="ru"><meta charset="utf-8"><title>Математическая практика: проверка браузером</title><pre id="report" data-status="running">Проверка…</pre><script>
+(async()=>{
+ const check=(ok,msg)=>{if(!ok)throw Error(msg)},frame=document.createElement('iframe');document.body.append(frame);
+ async function load(){const ready=new Promise(resolve=>frame.onload=resolve);frame.src='../www/index.html?test='+Date.now();await ready;}
+ await load();frame.contentWindow.localStorage.clear();await load();
+ let doc=frame.contentDocument,win=frame.contentWindow;
+ doc.querySelectorAll('#courses button')[1].click();
+ check(doc.querySelectorAll('#lessonList button')[1].classList.contains('locked'),'Second lesson should be locked');
+ for(const n of [5,4,7]){
+   const input=doc.querySelector('#mathPractice input');input.value=n;input.dispatchEvent(new win.Event('input'));
+   doc.querySelector('#mathPractice button').click();
+ }
+ check(!doc.querySelectorAll('#lessonList button')[1].classList.contains('locked'),'Completed lesson did not unlock next');
+ doc.getElementById('nextBtn').click();
+ let selects=doc.querySelectorAll('#mathPractice select');selects[1].value='2';selects[1].dispatchEvent(new win.Event('change'));
+ let fields=doc.querySelectorAll('.matrix-table input');fields[0].value='2';fields[0].dispatchEvent(new win.Event('input'));fields[1].value='3';fields[1].dispatchEvent(new win.Event('input'));
+ await load();doc=frame.contentDocument;win=frame.contentWindow;
+ fields=doc.querySelectorAll('.matrix-table input');check(fields.length===2&&fields[0].value==='2'&&fields[1].value==='3','Matrix draft not restored');
+ doc.querySelector('#mathPractice button').click();
+ selects=doc.querySelectorAll('#mathPractice select');selects[0].value='2';selects[0].dispatchEvent(new win.Event('change'));selects[1].value='2';selects[1].dispatchEvent(new win.Event('change'));
+ fields=doc.querySelectorAll('.matrix-table input');for(let i=0;i<4;i++){fields[i].value=[2,3,4,1][i];fields[i].dispatchEvent(new win.Event('input'));}
+ doc.querySelector('#mathPractice button').click();
+ check(doc.querySelector('#mathPractice h3').textContent.includes('3 из 3'),'Did not advance within lesson');
+ let data;win.AndroidBridge={saveJson:(_,raw)=>{data=JSON.parse(raw)}};doc.getElementById('exportQuick').click();
+ check(data.lessons.some(r=>r.id==='la-foundation-01'&&r.completed),'Lesson completion missing in export');
+ check(data.lessons.some(r=>r.id==='la-foundation-02:e2'&&r.completed),'Exercise completion missing in export');
+ frame.remove();const report=document.getElementById('report');report.dataset.status='passed';report.textContent='PASS prerequisites, 5 numerical/matrix exercises, step progression, reload draft and JSON export';
+})().catch(e=>{const report=document.getElementById('report');report.dataset.status='failed';report.textContent=e.stack});
+</script></html>

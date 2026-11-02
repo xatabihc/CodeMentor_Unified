@@ -43,3 +43,5 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #647d
 
 /* Course selection respects the existing responsive navigation. */
 [hidden]{display:none!important}#courses{display:grid;gap:6px;margin-bottom:12px}#courseStatus{padding:4px 8px;line-height:1.5}
+
+#mathPractice{min-width:0;max-width:100%}#mathPractice input{font:inherit;width:5rem;min-height:44px;padding:8px;color:inherit;background:transparent;border:1px solid #7790b2;border-radius:6px}#mathPractice label{display:inline-block;margin:6px}#mathPractice select{font:inherit;min-height:44px}.matrix-scroll{max-width:100%;overflow:auto}.matrix-table{border-spacing:4px;width:max-content}.matrix-table caption{text-align:left}.matrix-highlight{background:#38688955}.matrix-table td{padding:3px}.matrix-table input{text-align:center}.practice-wrap{min-width:0}

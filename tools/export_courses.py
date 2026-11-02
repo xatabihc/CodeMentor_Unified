@@ -12,3 +12,9 @@ assert all(any(x['id']==ident and x['track']==track for x in items) for ident,tr
 out=root/'www'/'lessons.js'
 out.write_text('window.CODEMENTOR_LESSONS = '+json.dumps(items,ensure_ascii=False,separators=(',',':'))+';\n',encoding='utf8')
 print('Exported',len(items),'lessons to',out)
+# Original mathematics material uses the shared exercise schema; legacy catalog stays intact.
+platform=json.loads((root/'curriculum_source/platform.json').read_text())
+assert not ({x['id'] for x in platform}&{x['id'] for x in items})
+assert len(platform)==len({x['id'] for x in platform})
+(root/'www/math-lessons.js').write_text('window.CODEMENTOR_MATH_LESSONS = '+json.dumps(platform,ensure_ascii=False,separators=(',',':'))+';\n',encoding='utf8')
+print('Exported',len(platform),'mathematics lessons')

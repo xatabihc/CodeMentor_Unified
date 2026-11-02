@@ -37,3 +37,7 @@ exercise_ids=[e['id'] for l in platform for e in l['exercises']]
 assert len(exercise_ids)==len(set(exercise_ids))
 assert not (set(exercise_ids)&(set(by_id)|{l['id'] for l in platform}))
 print(f'PASS {len(platform)} mathematics lessons and {len(exercise_ids)} stable exercise IDs')
+frozen=json.loads((root/'curriculum_source/compatibility/3.0-c1-lesson-ids.json').read_text())
+current={l['id']:l['track'] for l in items+platform}
+assert all(current.get(ident)==track for ident,track in frozen.items())
+print('PASS all 183 pre-existing lesson IDs and tracks retained')

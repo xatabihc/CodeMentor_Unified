@@ -47,3 +47,26 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #647d
 #mathPractice{min-width:0;max-width:100%}#mathPractice input{font:inherit;width:5rem;min-height:44px;padding:8px;color:inherit;background:transparent;border:1px solid #7790b2;border-radius:6px}#mathPractice label{display:inline-block;margin:6px}#mathPractice select{font:inherit;min-height:44px}.matrix-scroll{max-width:100%;overflow:auto}.matrix-table{border-spacing:4px;width:max-content}.matrix-table caption{text-align:left}.matrix-highlight{background:#38688955}.matrix-table td{padding:3px}.matrix-table input{text-align:center}.practice-wrap{min-width:0}
 
 #mathPractice details{margin-top:24px;padding-top:16px;border-top:1px solid #7790b2}#mathPractice summary{cursor:pointer;min-height:44px}#mathPractice textarea{display:block;max-width:100%;width:100%;font:inherit;color:inherit;background:transparent;padding:12px}#mathPractice input[type=range]{width:100%}.histogram-row{margin:10px 0}.histogram-bar{height:20px;background:#608de8;min-width:0;border-radius:3px}.histogram-row span{font-size:14px}
+
+/* One vertical document scroller; only code, wide data and the menu scroll inside. */
+html{height:auto;min-height:100%;scroll-padding-block:100px 24px}
+body{height:auto;min-height:100vh;min-height:100dvh}
+.app{min-height:100vh;min-height:100dvh;align-items:flex-start}
+.main{align-self:stretch}
+.panel{overflow:visible}
+.theory-scroll{max-height:none;overflow:visible;overscroll-behavior:auto;min-width:0}
+.theory pre{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;overscroll-behavior-y:auto}
+.sidebar{overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain}
+.sidebar .lessons-section{flex:0 0 auto;min-height:0}
+.lesson-list{overflow:visible;flex:none;overscroll-behavior:auto}
+.sidebar-footer{flex-shrink:0}
+#editor{overflow:auto;overscroll-behavior-y:auto;scroll-padding-block:12px}
+.matrix-scroll{overflow-x:auto;overflow-y:visible;overscroll-behavior-x:contain;overscroll-behavior-y:auto}
+.result,.hints,.taskbox,#mathPractice,.page-title h1,#learningDetails{overflow-wrap:anywhere}
+.hints{white-space:pre-wrap}
+button,input,select,textarea,summary{scroll-margin-block:110px 24px}
+.btn{max-width:100%;white-space:normal;text-align:center}
+.workspace{padding-bottom:calc(40px + var(--cm-safe-bottom))}
+dialog{max-height:calc(100vh - 24px - var(--cm-safe-top) - var(--cm-safe-bottom));max-height:calc(100dvh - 24px - var(--cm-safe-top) - var(--cm-safe-bottom));overflow:auto;overscroll-behavior:contain;scroll-padding-block:16px}
+.modal{min-width:0}.modal-top{gap:12px}.modal-top h2{overflow-wrap:anywhere}
+@media(max-height:400px){.topbar{position:relative}}

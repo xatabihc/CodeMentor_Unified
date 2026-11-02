@@ -55,6 +55,9 @@ public class MainActivity extends Activity {
                         java.util.Collections.emptyMap(), new java.io.ByteArrayInputStream(new byte[0]));
             }
         });
+        // DevTools is available only in debuggable builds for device regression tests.
+        WebView.setWebContentsDebuggingEnabled((getApplicationInfo().flags
+                & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0);
         webView = new WebView(this);
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);

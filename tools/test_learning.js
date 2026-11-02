@@ -4,7 +4,7 @@ const box={window:{}};vm.runInNewContext(fs.readFileSync('www/lessons.js','utf8'
 const lessons=box.window.CODEMENTOR_LESSONS,catalog=engine.catalog(lessons);
 assert.equal(catalog.length,3);assert(catalog.every(c=>c.levels.length===6));
 const exported=catalog.flatMap(c=>c.levels.flatMap(l=>l.modules.flatMap(m=>m.lessons)));
-assert.equal(exported.length,170);assert.deepEqual(new Set(exported.map(l=>l.id)),new Set(lessons.map(l=>l.id)));
+assert.equal(exported.length,lessons.length);assert(lessons.length>=170);assert.deepEqual(new Set(exported.map(l=>l.id)),new Set(lessons.map(l=>l.id)));
 assert(exported.every(l=>l.exercises[0].id===l.id));
 assert.throws(()=>engine.catalog([{id:'same'},{id:'same'}]));
 assert(engine.check({type:'numeric',expected:1/3,tolerance:{absolute:0.0005,relative:0}},0.333).ok);
@@ -16,4 +16,4 @@ assert(!engine.check({type:'vector',expected:[1,2]},[2,1]).ok);
 assert(engine.check({type:'choice',expected:'a'},'a').ok);assert(!engine.check({type:'choice',expected:'a'},'b').ok);
 assert.equal(engine.check({type:'algebraic'},'x').supported,false);
 assert.equal(engine.attempt('path01','print(1)',{ok:true}).result.ok,true);
-console.log('PASS common curriculum: all 170 IDs, 3 courses, 6 levels, numeric/matrix/vector/choice dispatch and invalid answers');
+console.log('PASS common curriculum: all legacy/exported IDs, 3 courses, 6 levels, numeric/matrix/vector/choice dispatch and invalid answers');

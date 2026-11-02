@@ -7,6 +7,9 @@ python3 tools/check_catalog.py
 python3 tools/reference_solutions.py | node tools/test_runner.js
 python3 tools/reference_solutions.py | node tools/worker_coverage.js
 node tools/test_editor.js
+node tools/test_viewport.js
+python3 tools/test_python_data.py
+python3 tools/test_python_data.py --references | node tools/test_python_data.js
 node tools/test_navigation.js
 mkdir -p .test-tmp/native-navigation
 javac -d .test-tmp/native-navigation android-studio/app/src/main/java/com/codementor/offline/SafeArea.java tools/java/SafeAreaTest.java

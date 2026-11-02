@@ -18,7 +18,7 @@ const assert=require('assert'),fs=require('fs'),{execFileSync}=require('child_pr
    }
    async function bottom(){for(let i=0;i<6;i++){await c.send('Input.dispatchMouseEvent',{type:'mouseWheel',x:8,y:height-40,deltaX:0,deltaY:30000});await pause(150);if(await ev("document.getElementById('exportQuick').getBoundingClientRect().bottom<=innerHeight"))break;}await reachable('#exportQuick');}
    // All legacy types, math grid and statistics lab use the same document scroller.
-   for(const track of ['path','python','mooc','debug','projects','linux','sql','advanced','linear-algebra','statistics']){
+   for(const track of ['path','python','mooc','debug','projects','linux','sql','advanced','python-data','linear-algebra','statistics']){
     await ev(`document.querySelectorAll('#courses button')[${track==='linear-algebra'?1:track==='statistics'?2:0}].click()`);
     await ev(`document.querySelector('[data-track="${track}"]').click()`);
     if(track==='linear-algebra')await ev(`document.querySelector('[data-lesson-id="la-foundation-02"]').click()`);
@@ -50,7 +50,7 @@ const assert=require('assert'),fs=require('fs'),{execFileSync}=require('child_pr
    // Lesson switches start at the top, without clearing Python drafts.
    await ev("document.querySelectorAll('#courses button')[0].click();document.querySelector('[data-track=python]').click()");assert.equal(await ev('scrollY'),0);
    assert(await ev("JSON.parse(localStorage.getItem('codementor-unified-v1')).records.py01.draft.includes('строка 299')"));
-   results.push({width,height,tracks:10,wheel:true,touch:true,menu:true,dialog:true,keyboardGeometry:true,codeScroll:true,matrixScroll:true,progress:true});console.log('PASS scroll '+width+'×'+height);
+   results.push({width,height,tracks:11,wheel:true,touch:true,menu:true,dialog:true,keyboardGeometry:true,codeScroll:true,matrixScroll:true,progress:true});console.log('PASS scroll '+width+'×'+height);
   }
   fs.writeFileSync('.test-tmp/scroll-results.json',JSON.stringify(results,null,2));
  }finally{c.stop()}

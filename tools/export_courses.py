@@ -4,7 +4,7 @@ root=pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(root/'curriculum_source'))
 from codementor.content import ALL
 from codementor.checking import capability
-fields=('id','track','module','title','intro','theory','example','task','starter','cases','hints','answers','source_url','stage','level','checkpoint','learning')
+fields=('id','track','module','title','intro','theory','example','task','starter','cases','hints','answers','source_url','stage','level','checkpoint','learning','curriculumLevel','prerequisites','source_note')
 items=[{'checking':capability(x), **{k:v for k,v in x.items() if k in fields}, **({'sql_expected':x['solution']} if x.get('track')=='sql' else {})} for x in ALL]
 baseline=json.loads((root/'curriculum_source/compatibility/2.0.1-lesson-ids.json').read_text())
 baseline.update(json.loads((root/'curriculum_source/compatibility/2.1-lesson-ids.json').read_text()))

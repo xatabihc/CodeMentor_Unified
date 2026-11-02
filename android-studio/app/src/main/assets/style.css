@@ -40,3 +40,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #647d
  .offline-tag .dot{width:8px;height:8px;margin:0}
  .workspace{padding-left:calc(12px + var(--cm-safe-left));padding-right:calc(12px + var(--cm-safe-right))}
 }
+
+/* Course selection respects the existing responsive navigation. */
+[hidden]{display:none!important}#courses{display:grid;gap:6px;margin-bottom:12px}#courseStatus{padding:4px 8px;line-height:1.5}

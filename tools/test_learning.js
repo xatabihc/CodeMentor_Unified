@@ -1,0 +1,18 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+require('../www/learning.js');const engine=globalThis.CodeMentorLearning;
+const box={window:{}};vm.runInNewContext(fs.readFileSync('www/lessons.js','utf8'),box);
+const lessons=box.window.CODEMENTOR_LESSONS,catalog=engine.catalog(lessons);
+assert.equal(catalog.length,3);assert(catalog.every(c=>c.levels.length===6));
+const exported=catalog.flatMap(c=>c.levels.flatMap(l=>l.modules.flatMap(m=>m.lessons)));
+assert.equal(exported.length,170);assert.deepEqual(new Set(exported.map(l=>l.id)),new Set(lessons.map(l=>l.id)));
+assert(exported.every(l=>l.exercises[0].id===l.id));
+assert.throws(()=>engine.catalog([{id:'same'},{id:'same'}]));
+assert(engine.check({type:'numeric',expected:1/3,tolerance:{absolute:0.0005,relative:0}},0.333).ok);
+for(const a of [null,'0.333',NaN,Infinity,0.3])assert(!engine.check({type:'numeric',expected:1/3},a).ok);
+assert(engine.check({type:'matrix',expected:[[1,2],[3,4]]},[[1,2],[3,4]]).ok);
+for(const a of [null,[],[[1,2]],[[1,2],[3]],[[1,2],[3,5]],[[1,2],[3,NaN]]])assert(!engine.check({type:'matrix',expected:[[1,2],[3,4]]},a).ok);
+assert(engine.check({type:'vector',expected:[1,2]},[1,2]).ok);
+assert(!engine.check({type:'vector',expected:[1,2]},[2,1]).ok);
+assert.equal(engine.check({type:'algebraic'},'x').supported,false);
+assert.equal(engine.attempt('path01','print(1)',{ok:true}).result.ok,true);
+console.log('PASS common curriculum: all 170 IDs, 3 courses, 6 levels, numeric/matrix/vector/choice dispatch and invalid answers');

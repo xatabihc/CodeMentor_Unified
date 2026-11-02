@@ -12,6 +12,7 @@ mkdir -p .test-tmp/native-navigation
 javac -d .test-tmp/native-navigation android-studio/app/src/main/java/com/codementor/offline/SafeArea.java tools/java/SafeAreaTest.java
 java -cp .test-tmp/native-navigation com.codementor.offline.SafeAreaTest
 python3 tools/test_apk_assets.py
+node tools/test_learning.js
 node tools/test_progress.js
 node tools/test_app_storage.js
 python3 tools/test_legacy_progress.py

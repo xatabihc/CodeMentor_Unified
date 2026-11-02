@@ -5,6 +5,21 @@
  const tracks=[['path','🌱','С нуля'],['python','🐍','Python'],['mooc','🎓','MOOC 2026'],['debug','🔧','Исправление ошибок'],['projects','🧩','Мини-проекты'],['linux','⌨','Linux'],['sql','🗃','SQLite'],['advanced','📦','Классы и файлы']];
  const $=x=>document.getElementById(x);
  let state={records:{},track:'path',lesson:'path01'};
+ let activeCourse='python';
+ function renderCourses(){
+   const engine=window.CodeMentorLearning;if(!engine)return;
+   const host=$('courses');host.replaceChildren();
+   for(const course of engine.catalog(lessons)){
+     const b=document.createElement('button');b.className='track'+(activeCourse===course.id?' active':'');
+     const ids=course.levels.flatMap(x=>x.modules.flatMap(m=>m.lessons.map(l=>l.id)));
+     b.textContent=course.title+' · '+ids.filter(id=>rec(id).completed).length+'/'+ids.length;
+     b.onclick=()=>{saveDraft();activeCourse=course.id;if(course.id==='python'){pickStart();}save();render();closeNav();};host.appendChild(b);
+   }
+   const ready=activeCourse==='python';
+   $('courseStatus').textContent=ready?'Все прежние разделы Python и практики сохранены.':'Курс готовится. Учебные модули пока не опубликованы.';
+   document.querySelector('.panels')?.toggleAttribute('hidden',!ready);
+   if(!ready){$('lessonTitle').textContent=engine.catalog(lessons).find(c=>c.id===activeCourse).title;$('lessonIntro').textContent='Начнём с нулевого уровня. Прогресс других направлений сохраняется.';}
+ }
  const storageKey='codementor-unified-v1';let deferredInstall=null,checking=false,recoveryRequired=false,lastSavedAt=0;
  function restore(){
    const bridge=window.AndroidBridge;
@@ -21,6 +36,7 @@
    candidates.sort((a,b)=>(b.data.saved_at||0)-(a.data.saved_at||0)||a.index-b.index);
    if(candidates.length){
      const selected=candidates[0],x=selected.data;
+     if(window.CodeMentorLearning?.courses.some(c=>c.id===x.course))activeCourse=x.course;
      state.records=x.records;lastSavedAt=x.saved_at||0;
      if(tracks.some(t=>t[0]===x.track))state.track=x.track;
      if(selected.index>0&&failed)$('saveStatus').textContent='Прогресс восстановлен из локальной копии — экспортируй JSON';
@@ -31,7 +47,7 @@
  function save(){
    if(recoveryRequired){$('saveStatus').textContent='Запись приостановлена: импортируй резервный JSON или экспортируй текущую работу.';return false;}
    lastSavedAt=Math.max(Date.now(),lastSavedAt+1);
-   const data=JSON.stringify({version:1,records:state.records,track:state.track,saved_at:lastSavedAt});
+   const data=JSON.stringify({version:1,records:state.records,track:state.track,course:activeCourse,saved_at:lastSavedAt});
    let stored=false;
    try{
      const previous=localStorage.getItem(storageKey);
@@ -46,15 +62,15 @@
  }
  function rec(id){return (Object.hasOwn(state.records,id)?state.records[id]:null)||{draft:null,completed:0,attempts:0,hint_level:0,completed_at:null}}
  function setRec(id,patch){state.records[id]={...rec(id),...patch};save();}
- function inTrack(){return lessons.filter(l=>l.track===state.track)}
+ function inTrack(){return lessons.filter(l=>l.track===state.track&&(!window.CodeMentorLearning||window.CodeMentorLearning.courseForTrack(l.track)===activeCourse))}
  function unlocked(l){if(l.track!=='path')return true;const sequence=lessons.filter(x=>x.track==='path'),index=sequence.findIndex(x=>x.id===l.id);return index<=0||!!rec(sequence[index-1].id).completed}
- function pickStart(){let seq=inTrack();let next=seq.find(l=>!rec(l.id).completed)||seq[seq.length-1];state.lesson=next.id;}
+ function pickStart(){let seq=inTrack();if(!seq.length)return;let next=seq.find(l=>!rec(l.id).completed)||seq[seq.length-1];state.lesson=next.id;}
  function esc(t){return String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
- function renderTracks(){const host=$('tracks');host.replaceChildren();for(const [key,icon,title] of tracks){const a=lessons.filter(x=>x.track===key);const done=a.filter(x=>rec(x.id).completed).length;const b=document.createElement('button');b.className='track'+(state.track===key?' active':'');b.innerHTML=`<span class="trackicon">${icon}</span><span>${title}</span><span class="track-count">${done}/${a.length}</span>`;b.onclick=()=>{saveDraft();state.track=key;state.lesson=key==='path'?(a.find(x=>!rec(x.id).completed)||a[0]).id:a[0].id;save();render();closeNav();};host.appendChild(b)}}
+ function renderTracks(){renderCourses();const host=$('tracks');host.replaceChildren();for(const [key,icon,title] of tracks.filter(t=>!window.CodeMentorLearning||window.CodeMentorLearning.courseForTrack(t[0])===activeCourse)){const a=lessons.filter(x=>x.track===key);const done=a.filter(x=>rec(x.id).completed).length;const b=document.createElement('button');b.className='track'+(state.track===key?' active':'');b.innerHTML=`<span class="trackicon">${icon}</span><span>${title}</span><span class="track-count">${done}/${a.length}</span>`;b.onclick=()=>{saveDraft();state.track=key;state.lesson=key==='path'?(a.find(x=>!rec(x.id).completed)||a[0]).id:a[0].id;save();render();closeNav();};host.appendChild(b)}}
  function renderList(){const list=$('lessonList');list.replaceChildren();const items=inTrack();$('sectionName').textContent=tracks.find(t=>t[0]===state.track)?.[2]||'Уроки';$('sectionCount').textContent=items.filter(x=>rec(x.id).completed).length+'/'+items.length;for(let i=0;i<items.length;i++){const l=items[i],locked=!unlocked(l),done=!!rec(l.id).completed;const b=document.createElement('button');b.disabled=locked;b.className=`lesson-link${state.lesson===l.id?' active':''}${done?' done':''}${locked?' locked':''}`;b.innerHTML=`<span class="lesson-icon">${done?'✓':locked?'🔒':i+1}</span><span class="lesson-name"><strong>${esc(l.title)}</strong><small>${esc(l.level||l.module||'Практика')}</small></span>`;b.onclick=()=>{saveDraft();state.lesson=l.id;render();closeNav()};list.appendChild(b)}}
  function saveDraft(){const current=byId.get(state.lesson);if(current&&$('editor')){const v=$('editor').value;if(v!==rec(current.id).draft)setRec(current.id,{draft:v})}}
  function result(kind,title,msg){const h=$('result');h.className='result'+(kind?' '+kind:'');h.replaceChildren();const heading=document.createElement('div');heading.className='result-title';heading.textContent=title;const p=document.createElement('p');p.textContent=msg;h.append(heading,p)}
- function render(){renderTracks();renderList();let l=byId.get(state.lesson)||inTrack()[0];if(!l)return;state.lesson=l.id;let a=inTrack(),idx=a.findIndex(x=>x.id===l.id);let trackTitle=tracks.find(t=>t[0]===state.track)?.[2]||'Python';$('crumb').textContent=trackTitle;$('eyebrow').textContent=(l.module||trackTitle).toUpperCase()+(l.level?' · '+l.level.toUpperCase():'');$('lessonTitle').textContent=l.title;$('lessonIntro').textContent=l.intro||'';$('theoryHeading').textContent=l.title;$('theoryLines').replaceChildren();for(let s of l.theory||[]){const li=document.createElement('li');li.textContent=s;$('theoryLines').appendChild(li)}$('exampleCode').textContent=l.example||'—';$('taskText').textContent=l.task||'';$('fileLabel').textContent=l.track==='linux'?'terminal.sh':l.track==='sql'?'query.sql':'main.py';$('editor').value=rec(l.id).draft??l.starter??'';$('hintBtn').disabled=!(l.hints||[]).length;const hints=$('hints');hints.hidden=true;hints.textContent='';const learning=$('learningDetails');learning.replaceChildren();
+ function render(){renderTracks();renderList();if(activeCourse!=='python'){$('prevBtn').disabled=true;$('nextBtn').disabled=true;$('progressLabel').textContent='Модули готовятся';$('progressFill').style.width='0%';return;}let l=byId.get(state.lesson)||inTrack()[0];if(!l)return;state.lesson=l.id;let a=inTrack(),idx=a.findIndex(x=>x.id===l.id);let trackTitle=tracks.find(t=>t[0]===state.track)?.[2]||'Python';$('crumb').textContent=trackTitle;$('eyebrow').textContent=(l.module||trackTitle).toUpperCase()+(l.level?' · '+l.level.toUpperCase():'');$('lessonTitle').textContent=l.title;$('lessonIntro').textContent=l.intro||'';$('theoryHeading').textContent=l.title;$('theoryLines').replaceChildren();for(let s of l.theory||[]){const li=document.createElement('li');li.textContent=s;$('theoryLines').appendChild(li)}$('exampleCode').textContent=l.example||'—';$('taskText').textContent=l.task||'';$('fileLabel').textContent=l.track==='linux'?'terminal.sh':l.track==='sql'?'query.sql':'main.py';$('editor').value=rec(l.id).draft??l.starter??'';$('hintBtn').disabled=!(l.hints||[]).length;const hints=$('hints');hints.hidden=true;hints.textContent='';const learning=$('learningDetails');learning.replaceChildren();
  if(l.learning){
    for(const [key,title] of [['walkthrough','Разбор примера'],['first','Первый шаг · самопроверка'],['medium','Практика посложнее · самопроверка'],['independent','Самостоятельная практика'],['errors','Частые ошибки'],['review','Вспоминаем пройденное'],['checkpoint','Контроль перед переходом']]){
      const heading=document.createElement('h3');heading.textContent=title;
@@ -110,7 +126,7 @@
    else media.addListener(()=>closeNav());
  }
  function normalizeAnswer(s){return String(s).trim().replace(/;$/,'').replace(/\s+/g,' ').toLowerCase()}
- function check(){if(checking)return;const l=byId.get(state.lesson);if(!l)return;if(!['python-subset','text'].includes(l.checking?.mode)){result('','Самостоятельная практика',l.checking?.reason||'Автоматическая проверка для этого урока ещё не подтверждена.');return}const code=$('editor').value;setRec(l.id,{draft:code,attempts:(rec(l.id).attempts||0)+1});if(!code.trim()){result('error','Пока пусто','Напиши или дополни код перед проверкой.');return}
+ function check(){if(checking||activeCourse!=='python')return;const l=byId.get(state.lesson);if(!l)return;if(!['python-subset','text'].includes(l.checking?.mode)){result('','Самостоятельная практика',l.checking?.reason||'Автоматическая проверка для этого урока ещё не подтверждена.');return}const code=$('editor').value;setRec(l.id,{draft:code,attempts:(rec(l.id).attempts||0)+1});if(!code.trim()){result('error','Пока пусто','Напиши или дополни код перед проверкой.');return}
  if(l.track==='linux'){const ok=(l.answers||[]).some(a=>normalizeAnswer(a)===normalizeAnswer(code));finish(l,ok,ok?'Команда правильная. Она проверена как текст — не выполнялась на ноутбуке.':'Команда не совпала с ожидаемым вариантом. Посмотри теорию и попробуй ещё раз.');return}
  if(l.track==='sql'){const answer=l.sql_expected;if(answer){const ok=normalizeAnswer(answer)===normalizeAnswer(code);finish(l,ok,ok?'SQL-запрос совпал с проверочным образцом. Проверка текстовая — без выполнения SQL.':'Запрос отличается от учебного образца. Проверь столбцы, условия и сортировку. Сейчас используется текстовое сопоставление, без выполнения SQL.');return}result('','SQL: самостоятельная практика','Для данного SQL-урока автоматическая проверка не настроена.');return}
  if(!Array.isArray(l.cases)||!l.cases.length){result('','Учебный материал','Автоматическая проверка для этого урока пока недоступна. Теория и черновик сохраняются; решение можно запустить в установленном Python на ноутбуке.');return}

@@ -31,6 +31,14 @@
    check(doc.getElementById('openNav').getAttribute('aria-expanded')==='false','Expanded state stale');
   }
   size(width,844);await settle();await menu();
+  const courses=doc.querySelectorAll('#courses button');check(courses.length===3,'Three courses missing');
+  const original=doc.getElementById('editor').value;
+  courses[1].click();check(doc.getElementById('lessonTitle').textContent==='Линейная алгебра','Wrong course title');
+  check(doc.querySelector('.panels').hidden,'Unavailable course shows Python practice');
+  check(doc.getElementById('lessonList').children.length===0,'Python lessons leak into math');
+  doc.querySelectorAll('#courses button')[0].click();
+  check(!doc.querySelector('.panels').hidden,'Python practice did not return');
+  check(doc.getElementById('editor').value===original,'Switching course changed draft');
   win.scrollTo(0,250);await settle();await menu();
   const editor=doc.getElementById('editor');const draft=editor.value;editor.focus({preventScroll:true});
   // A viewport resize models the geometric effect; this is not a real Android IME test.

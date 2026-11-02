@@ -2,11 +2,12 @@
 const WebSocket=require('ws'),fs=require('fs'),path=require('path'),http=require('http'),{spawn}=require('child_process');
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
 async function connect(url){
- const ws=new WebSocket(url);await new Promise((r,j)=>{ws.once('open',r);ws.once('error',j)});let id=0;const pending=new Map();
- ws.on('message',raw=>{const m=JSON.parse(raw);if(pending.has(m.id)){const {resolve,reject,timer}=pending.get(m.id);clearTimeout(timer);pending.delete(m.id);m.error?reject(Error(JSON.stringify(m.error))):resolve(m.result)}});
+ const ws=new WebSocket(url);await new Promise((r,j)=>{ws.once('open',r);ws.once('error',j)});let id=0;const pending=new Map(),events=new Map();
+ ws.on('message',raw=>{const m=JSON.parse(raw);if(m.method&&events.has(m.method)){events.get(m.method)();events.delete(m.method)}if(pending.has(m.id)){const {resolve,reject,timer}=pending.get(m.id);clearTimeout(timer);pending.delete(m.id);m.error?reject(Error(JSON.stringify(m.error))):resolve(m.result)}});
  const send=(method,params={})=>new Promise((resolve,reject)=>{const key=++id;const timer=setTimeout(()=>{pending.delete(key);reject(Error('CDP timeout: '+method))},15000);pending.set(key,{resolve,reject,timer});ws.send(JSON.stringify({id:key,method,params}))});
  const evaluate=async expression=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(r.exceptionDetails.exception?.description||JSON.stringify(r.exceptionDetails));return r.result.value};
- return {send,evaluate,close:()=>ws.close()};
+ const waitEvent=method=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>{events.delete(method);reject(Error('CDP event timeout: '+method))},15000);events.set(method,()=>{clearTimeout(timer);resolve()})});
+ return {send,evaluate,waitEvent,close:()=>ws.close()};
 }
 async function browser(){
  const root=path.resolve(__dirname,'..'),profile=fs.mkdtempSync(path.join(root,'.test-tmp/cdp-'));

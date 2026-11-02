@@ -70,3 +70,7 @@ button,input,select,textarea,summary{scroll-margin-block:110px 24px}
 dialog{max-height:calc(100vh - 24px - var(--cm-safe-top) - var(--cm-safe-bottom));max-height:calc(100dvh - 24px - var(--cm-safe-top) - var(--cm-safe-bottom));overflow:auto;overscroll-behavior:contain;scroll-padding-block:16px}
 .modal{min-width:0}.modal-top{gap:12px}.modal-top h2{overflow-wrap:anywhere}
 @media(max-height:400px){.topbar{position:relative}}
+
+.module-heading{font-size:13px;padding:12px 8px;color:#bccded}.algebra-demo{margin-block:14px}.algebra-demo summary{min-height:44px;cursor:pointer}.matrix-table td:not(:has(input)){padding:12px;min-width:52px;text-align:center;border:1px solid #91a5c0}.algebra-demo .matrix-scroll{margin-block:10px}
+
+.pivot-cell{outline:2px solid #168768;outline-offset:-3px;font-weight:800}

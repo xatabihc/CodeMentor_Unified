@@ -23,6 +23,13 @@
  function check(exercise,answer){
    const expected=exercise.expected,options=exercise.tolerance;
    if(exercise.type==='numeric'||exercise.type==='statistics')return result(numeric(answer,expected,options),'Проверь вычисления и указанное округление.');
+   if(exercise.type==='eigenvector')return result(root.CodeMentorAlgebra.eigenvector(exercise.operation.a,exercise.eigenvalue,answer),'Нужен ненулевой вектор v, для которого Av = λv. Любой ненулевой кратный вектор допустим.');
+   if(exercise.type==='basis'){
+     try{const raw=root.CodeMentorAlgebra.matrix(answer),norms=raw[0].map((_,j)=>Math.max(...raw.map(r=>Math.abs(r[j])))),a=raw.map(r=>r.map((v,j)=>norms[j]?v/norms[j]:0)),space=exercise.space,k=root.CodeMentorAlgebra.reduction(space).rank;return result(a.length===space.length&&a[0].length===k&&root.CodeMentorAlgebra.reduction(a).rank===k&&root.CodeMentorAlgebra.reduction(space.map((r,i)=>r.concat(a[i]))).rank===k,'Столбцы базиса должны быть независимы и порождать то же пространство.')}catch(e){return result(false,'Проверь размер и числовые значения базиса.')}
+   }
+   if(exercise.type==='row-reduction'){
+     try{if(!answer||!Array.isArray(answer.operations)||answer.operations.length>100)return result(false,'Выполни допустимые преобразования строк.');const a=answer.operations.reduce((m,op)=>root.CodeMentorAlgebra.rowOperation(m,op),exercise.initial);return result(exercise.goal==='echelon'?root.CodeMentorAlgebra.echelon(a):check({type:'matrix',expected:root.CodeMentorAlgebra.reduction(exercise.initial).matrix},a).ok,'Сохрани эквивалентность строк и доведи матрицу до требуемого ступенчатого вида.')}catch(e){return result(false,e.message)}
+   }
    if(exercise.type==='choice')return result(answer===expected,'Выбери один вариант.');
    if(exercise.type==='vector'||exercise.type==='matrix'){
      const a=exercise.type==='vector'?[answer]:answer,e=exercise.type==='vector'?[expected]:expected;

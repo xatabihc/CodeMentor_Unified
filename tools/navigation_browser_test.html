@@ -34,10 +34,10 @@
   const courses=doc.querySelectorAll('#courses button');check(courses.length===3,'Three courses missing');
   courses[0].click();
   const original=doc.getElementById('editor').value;
-  courses[1].click();check(doc.getElementById('crumb').textContent==='Первые матрицы','Wrong course title');
+  courses[1].click();check(doc.getElementById('crumb').textContent==='Линейная алгебра','Wrong course title');
   check(!doc.querySelector('.panels').hidden,'Math practice missing');
   check(!doc.getElementById('mathPractice').hidden,'Math controls missing');
-  check(doc.getElementById('lessonList').children.length===6,'Math lesson count incorrect');
+  check(doc.querySelectorAll('#lessonList button').length>=6,'Math lesson count incorrect');
   const locked=doc.querySelectorAll('#lessonList button')[1].classList.contains('locked');
   doc.querySelectorAll('#lessonList button')[1].click();
   check(doc.querySelectorAll('.matrix-table input').length>=1,'Matrix editor missing');

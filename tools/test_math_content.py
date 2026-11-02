@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 items=json.loads(Path('curriculum_source/platform.json').read_text())
 all_items=items
-items=[l for l in items if l['track']=='linear-algebra']
+items=[l for l in items if l['id'].startswith('la-foundation-')]
 assert len(items)==6
 expected=[
  [2+3,6-2,4+3],

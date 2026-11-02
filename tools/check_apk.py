@@ -24,6 +24,8 @@ def verify_assets(archive, web=ROOT / 'www'):
             raise ValueError('Stale or modified packaged asset: ' + name)
     source = archive.read('assets/lessons.js').decode('utf-8')
     lessons = json.loads(source.split(' = ', 1)[1].rstrip(';\n'))
+    math_source=archive.read('assets/math-lessons.js').decode('utf-8')
+    lessons += json.loads(math_source.split(' = ', 1)[1].rstrip(';\n'))
     if len(lessons) != len({item['id'] for item in lessons}):
         raise ValueError('Duplicate lesson IDs')
     return lessons
@@ -48,6 +50,7 @@ def main():
             raise ValueError('Python reference solution leaked into catalog')
         python_files = [name for name in archive.namelist() if name.endswith(('.py', '.pyc', '.so'))]
     print(f'PASS APK assets: {len(lessons)} lessons, {sum(x["track"]=="path" for x in lessons)} path lessons')
+    print(f'Mathematics: {sum(bool(x.get("exercises")) for x in lessons)} lessons, {sum(len(x.get("exercises", [])) for x in lessons)} exercises')
     print('Bundled Python checker: worker.js (JavaScript subset; CPython is not bundled).')
     print('Python/native files:', ', '.join(python_files) or 'none')
     print('SHA256:', hashlib.sha256(args.apk.read_bytes()).hexdigest())

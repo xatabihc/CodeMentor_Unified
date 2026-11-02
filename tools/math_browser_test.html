@@ -24,6 +24,16 @@
  let data;win.AndroidBridge={saveJson:(_,raw)=>{data=JSON.parse(raw)}};doc.getElementById('exportQuick').click();
  check(data.lessons.some(r=>r.id==='la-foundation-01'&&r.completed),'Lesson completion missing in export');
  check(data.lessons.some(r=>r.id==='la-foundation-02:e2'&&r.completed),'Exercise completion missing in export');
- frame.remove();const report=document.getElementById('report');report.dataset.status='passed';report.textContent='PASS prerequisites, 5 numerical/matrix exercises, step progression, reload draft and JSON export';
+ doc.querySelectorAll('#courses button')[2].click();
+ check(doc.querySelectorAll('#lessonList button').length===7,'Statistics module missing');
+ for(const n of [2,3,4]){const field=doc.querySelector('#mathPractice input');field.value=n;field.dispatchEvent(new win.Event('input'));doc.querySelector('#mathPractice button').click();}
+ check(!doc.querySelectorAll('#lessonList button')[1].classList.contains('locked'),'Statistics prerequisites did not advance');
+ const lab=doc.querySelector('#mathPractice details');check(!!lab,'Statistics lab missing');lab.open=true;
+ const dataInput=lab.querySelector('textarea');dataInput.value='2 4 6';dataInput.dispatchEvent(new win.Event('input'));
+ check(lab.textContent.includes('Среднее: 4'),'Calculator mean wrong');
+ check(lab.textContent.includes('Выборочная дисперсия (n − 1): 4'),'Sample variance wrong');
+ check(lab.querySelectorAll('.histogram-row').length===5,'Histogram missing');
+ dataInput.value='bad';dataInput.dispatchEvent(new win.Event('input'));check(lab.querySelectorAll('.histogram-row').length===0,'Invalid histogram not cleared');
+ frame.remove();const report=document.getElementById('report');report.dataset.status='passed';report.textContent='PASS prerequisites, matrix/statistics exercises, step progression, reload draft, JSON export, calculator and histogram';
 })().catch(e=>{const report=document.getElementById('report');report.dataset.status='failed';report.textContent=e.stack});
 </script></html>

@@ -43,7 +43,7 @@
      if(!outcome.ok){notify(false,outcome.message+' '+lesson.learning.errors);return;}
      setRec(exercise.id,{completed:1,completed_at:old.completed_at||new Date().toISOString()});
      if(lesson.exercises.every(e=>rec(e.id).completed)){onComplete();return;}
-     notify(true,'Ответ верный. Перейди к следующему небольшому упражнению.');mount(host,lesson,{rec,setRec,onComplete,notify,allowed});
+     notify(true,'Ответ верный. Перейди к следующему небольшому упражнению.');mount(host,lesson,{rec,setRec,onComplete,notify,allowed});if(lesson.track==='statistics')root.CodeMentorStatistics.mount(host,{rec,setRec});
    };
    const simpler=el('button','Не понял'),step=el('button','Показать следующий шаг');
    for(const b of [simpler,step]){b.type='button';b.className='btn subtle';}

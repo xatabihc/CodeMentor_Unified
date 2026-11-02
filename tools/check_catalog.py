@@ -10,6 +10,7 @@ assert len(items)==len(ALL)==len({x['id'] for x in items})
 assert [x['id'] for x in items]==[x['id'] for x in ALL]
 assert all('solution' not in x for x in items)
 baseline=json.loads((root/'curriculum_source/compatibility/2.0.1-lesson-ids.json').read_text())
+baseline.update(json.loads((root/'curriculum_source/compatibility/2.1-lesson-ids.json').read_text()))
 by_id={x['id']:x for x in items}
 assert all(by_id[ident]['track']==track for ident,track in baseline.items())
 assert [x['id'] for x in items if x['id'] in baseline]==list(baseline)
@@ -26,3 +27,13 @@ assert {p.relative_to(web) for p in web.rglob('*') if p.is_file()}=={p.relative_
 for p in web.rglob('*'):
     if p.is_file(): assert p.read_bytes()==(assets/p.relative_to(web)).read_bytes(),p
 print(f'PASS {len(items)} unique lesson IDs; no Python reference solutions shipped; Android assets identical')
+
+platform=json.loads((root/'curriculum_source/platform.json').read_text())
+exported=json.loads((root/'www/math-lessons.js').read_text().split(' = ',1)[1].rstrip(';\n'))
+assert platform==exported
+assert not (set(by_id)&{l['id'] for l in platform})
+assert len(platform)==len({l['id'] for l in platform})
+exercise_ids=[e['id'] for l in platform for e in l['exercises']]
+assert len(exercise_ids)==len(set(exercise_ids))
+assert not (set(exercise_ids)&(set(by_id)|{l['id'] for l in platform}))
+print(f'PASS {len(platform)} mathematics lessons and {len(exercise_ids)} stable exercise IDs')

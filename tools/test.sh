@@ -15,6 +15,7 @@ python3 tools/test_apk_assets.py
 node tools/test_learning.js
 python3 tools/test_math_content.py
 node tools/test_math.js
+node tools/test_statistics.js
 node --check www/math-ui.js
 node tools/test_progress.js
 node tools/test_app_storage.js

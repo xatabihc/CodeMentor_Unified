@@ -2,6 +2,8 @@
 import json
 from pathlib import Path
 items=json.loads(Path('curriculum_source/platform.json').read_text())
+all_items=items
+items=[l for l in items if l['track']=='linear-algebra']
 assert len(items)==6
 expected=[
  [2+3,6-2,4+3],
@@ -19,3 +21,14 @@ for i,l in enumerate(items):
  for j,e in enumerate(l['exercises']):
   assert e['id'] not in ids;ids.add(e['id']);assert e['expected']==expected[i][j]
 print('PASS independent mathematics calculations, 18 stable exercises, sequential prerequisites')
+
+import statistics
+operations={'count':len,'frequency':lambda a:a.count(4),'mean':statistics.mean,'median':statistics.median,'mode':statistics.mode,'range':lambda a:max(a)-min(a)}
+stats=[l for l in all_items if l['track']=='statistics']
+assert len(stats)==7
+for i,l in enumerate(stats):
+ assert l['prerequisites']==([stats[i-1]['id']] if i else [])
+ for e in l['exercises']:
+  assert e['id'] not in ids;ids.add(e['id'])
+  assert e['expected']==operations[e['statistic']](e['data'])
+print('PASS 21 statistics exercises computed independently with Python statistics')

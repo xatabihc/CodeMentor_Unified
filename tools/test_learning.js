@@ -13,6 +13,7 @@ assert(engine.check({type:'matrix',expected:[[1,2],[3,4]]},[[1,2],[3,4]]).ok);
 for(const a of [null,[],[[1,2]],[[1,2],[3]],[[1,2],[3,5]],[[1,2],[3,NaN]]])assert(!engine.check({type:'matrix',expected:[[1,2],[3,4]]},a).ok);
 assert(engine.check({type:'vector',expected:[1,2]},[1,2]).ok);
 assert(!engine.check({type:'vector',expected:[1,2]},[2,1]).ok);
+assert(engine.check({type:'choice',expected:'a'},'a').ok);assert(!engine.check({type:'choice',expected:'a'},'b').ok);
 assert.equal(engine.check({type:'algebraic'},'x').supported,false);
 assert.equal(engine.attempt('path01','print(1)',{ok:true}).result.ok,true);
 console.log('PASS common curriculum: all 170 IDs, 3 courses, 6 levels, numeric/matrix/vector/choice dispatch and invalid answers');

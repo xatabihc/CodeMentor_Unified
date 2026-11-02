@@ -38,11 +38,13 @@
   check(!doc.querySelector('.panels').hidden,'Math practice missing');
   check(!doc.getElementById('mathPractice').hidden,'Math controls missing');
   check(doc.getElementById('lessonList').children.length===6,'Math lesson count incorrect');
+  const locked=doc.querySelectorAll('#lessonList button')[1].classList.contains('locked');
   doc.querySelectorAll('#lessonList button')[1].click();
   check(doc.querySelectorAll('.matrix-table input').length>=1,'Matrix editor missing');
   const sizes=doc.querySelectorAll('#mathPractice select');sizes[0].value='2';sizes[0].dispatchEvent(new win.Event('change'));sizes[1].value='3';sizes[1].dispatchEvent(new win.Event('change'));
   check(doc.querySelectorAll('.matrix-table input').length===6,'Matrix resize failed');
-  check(doc.querySelector('#mathPractice button').disabled,'Prerequisites bypassed');
+  check(root.scrollWidth<=win.innerWidth+1,'Matrix causes page overflow');
+  check(doc.querySelector('#mathPractice button').disabled===locked,'Prerequisites state inconsistent');
   doc.querySelectorAll('#courses button')[0].click();
   check(!doc.querySelector('.panels').hidden,'Python practice did not return');
   check(doc.getElementById('editor').value===original,'Switching course changed draft');

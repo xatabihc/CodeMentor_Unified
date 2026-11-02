@@ -2,7 +2,7 @@
  'use strict';
  const lessons=[...(window.CODEMENTOR_LESSONS||[]),...(window.CODEMENTOR_MATH_LESSONS||[])];
  const byId=new Map(lessons.map(l=>[l.id,l]));
- const tracks=[['path','🌱','С нуля'],['python','🐍','Python'],['mooc','🎓','MOOC 2026'],['debug','🔧','Исправление ошибок'],['projects','🧩','Мини-проекты'],['linux','⌨','Linux'],['sql','🗃','SQLite'],['advanced','📦','Классы и файлы'],['linear-algebra','▦','Первые матрицы']];
+ const tracks=[['path','🌱','С нуля'],['python','🐍','Python'],['mooc','🎓','MOOC 2026'],['debug','🔧','Исправление ошибок'],['projects','🧩','Мини-проекты'],['linux','⌨','Linux'],['sql','🗃','SQLite'],['advanced','📦','Классы и файлы'],['linear-algebra','▦','Первые матрицы'],['statistics','▥','Первые данные']];
  const $=x=>document.getElementById(x);
  let state={records:{},track:'path',lesson:'path01'};
  let activeCourse='python';
@@ -16,7 +16,7 @@
      b.onclick=()=>{saveDraft();activeCourse=course.id;state.track=course.id==='python'?'path':course.id;pickStart();save();render();closeNav();};host.appendChild(b);
    }
    const ready=lessons.some(l=>engine.courseForTrack(l.track)===activeCourse);
-   $('courseStatus').textContent=ready?(activeCourse==='python'?'Все прежние разделы Python и практики сохранены.':'Уровень «С нуля» · модуль «Первые матрицы»'):'Курс готовится. Учебные модули пока не опубликованы.';
+   $('courseStatus').textContent=ready?(activeCourse==='python'?'Все прежние разделы Python и практики сохранены.':'Уровень «С нуля» · '+(activeCourse==='statistics'?'Первые данные':'Первые матрицы')):'Курс готовится. Учебные модули пока не опубликованы.';
    document.querySelector('.panels')?.toggleAttribute('hidden',!ready);
    if(!ready){$('lessonTitle').textContent=engine.catalog(lessons).find(c=>c.id===activeCourse).title;$('lessonIntro').textContent='Начнём с нулевого уровня. Прогресс других направлений сохраняется.';}
  }
@@ -89,6 +89,7 @@
    $('checkStatus').textContent='Локальная проверка числового ответа, размера и значений матрицы.';
    $('nextBtn').disabled=idx>=a.length-1||!rec(l.id).completed;
    window.CodeMentorMathUI.mount($('mathPractice'),l,{rec,setRec,allowed:unlocked(l),notify:(ok,msg)=>result(ok?'success':'error',ok?'Правильно':'Попробуй ещё раз',msg),onComplete:()=>{finish(l,true,'Все три упражнения выполнены.');render();}});
+   if(l.track==='statistics')window.CodeMentorStatistics.mount($('mathPractice'),{rec,setRec});
    if(!rec(l.id).completed)result('','Математическая практика','Реши три небольших упражнения по порядку.');
  }
  const current=document.querySelector('.lesson-link.active');current?.scrollIntoView({block:'nearest'});

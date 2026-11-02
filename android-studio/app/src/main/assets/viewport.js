@@ -12,8 +12,10 @@
  }
  let queued=false;
  function schedule(){if(queued)return;queued=true;root.requestAnimationFrame(()=>{queued=false;ensureVisible()})}
- root.addEventListener('resize',schedule,{passive:true});
- root.visualViewport?.addEventListener('resize',schedule,{passive:true});
+ let previousHeight=root.visualViewport?.height||root.innerHeight;
+ function resized(){const height=root.visualViewport?.height||root.innerHeight;const shrank=height<previousHeight-1;previousHeight=height;if(shrank)schedule()}
+ root.addEventListener('resize',resized,{passive:true});
+ root.visualViewport?.addEventListener('resize',resized,{passive:true});
  document.addEventListener('focusin',e=>{if(e.target.matches('input,textarea,select'))schedule()});
  root.CodeMentorViewport={ensureVisible};
 })(window);

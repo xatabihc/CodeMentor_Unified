@@ -26,6 +26,8 @@ for number in range(1, 18):
 
 
 def capability(lesson):
+    if lesson.get('quizzes') and lesson.get('cases'):
+        return {'mode': 'python-subset', 'reason': 'Код проверяется по нескольким входам в учебном поднаборе Python. Дополнительно ответь на вопрос понимания; часть возможностей полноценного CPython здесь не поддерживается.'}
     if lesson.get('quizzes'):
         return {'mode': 'concept-quiz', 'reason': 'Вопросы на понимание проверяются офлайн. Практический код здесь сохраняется как черновик; сложные темы требуют полноценного CPython. Это не проверка исполнения Python.'}
     if lesson['id'] in UNAVAILABLE:

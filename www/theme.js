@@ -35,7 +35,9 @@
   host.append(grid);
   apply(current());
  }
- if(root.document?.readyState==='loading')root.document.addEventListener('DOMContentLoaded',setup);
- else setup();
+ if(root.document){
+  if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',setup);
+  else setup();
+ }
  root.CodeMentorThemes={themes,valid,apply,current,storageKey:key};
 })(typeof window==='undefined'?globalThis:window);

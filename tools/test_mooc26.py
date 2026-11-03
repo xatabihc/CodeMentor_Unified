@@ -15,9 +15,10 @@ ids = [x["id"] for x in MOOC26]
 for index, item in enumerate(MOOC26):
     assert item["track"] == "mooc"
     assert item["prerequisites"] == ([] if index == 0 else [ids[index - 1]])
-    assert capability(item)["mode"] == "concept-quiz"
+    mode = capability(item)["mode"]
+    assert mode == ("python-subset" if item["cases"] else "concept-quiz"), item["id"]
     assert "programming-26.mooc.fi/part-" in item["source_url"]
-    assert item["practiceKind"] == "concept-and-code-draft"
+    assert item["practiceKind"] == ("code-and-quiz" if item["cases"] else "concept-and-code-draft")
     assert len(item["intro"]) >= 45, item["id"]
     assert len(item["example"]) >= 10, item["id"]
     assert len(item["theory"]) >= 3
@@ -26,8 +27,11 @@ for index, item in enumerate(MOOC26):
     assert all(item["learning"].get(key) for key in
         ("walkthrough", "first", "medium", "independent", "errors", "review", "checkpoint"))
     assert item["starter"].startswith("#")
-    assert not item["cases"], "Do not pretend arbitrary CPython code is executed"
-    assert not item.get("solution")
+    if item["cases"]:
+        assert item.get("solution"), item["id"]
+        assert len(item["cases"]) >= 1
+    else:
+        assert not item.get("solution"), "Do not pretend arbitrary CPython code is executed"
     for quiz in item["quizzes"]:
         assert quiz["id"] not in ids
         assert len(quiz["options"]) == 3
@@ -37,7 +41,8 @@ for index, item in enumerate(MOOC26):
         assert len(quiz["explanation"]) >= 35
         assert len(quiz["wrongExplanation"]) >= 30
 assert len(ALL) == len({x["id"] for x in ALL})
+assert sum(bool(x["cases"]) for x in MOOC26) == 17
 source = root / "curriculum_source" / "codementor"
 assert len(json.loads((source / "mooc26_core.json").read_text())) == 7
 assert len(json.loads((source / "mooc26_advanced.json").read_text())) == 7
-print("PASS MOOC26: 14 original parts, 98 conceptual lessons, valid sequential prerequisites and checks")
+print("PASS MOOC26: 14 original parts, 98 lessons, 17 executable exercises, safe capabilities and prerequisites")

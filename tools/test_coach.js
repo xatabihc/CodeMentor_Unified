@@ -24,7 +24,9 @@ const spacing=coach.mismatch(lesson,{index:1,expected:'Кот',actual:'Кот '}
 assert(spacing.includes('пробелами'),spacing);
 const input=coach.mismatch({cases:[{stdin:['7','3']}],hints:['Посмотри на вычисление']},
   {index:1,expected:'10',actual:'73'});
-assert(input.includes('ввод: 7, 3')&&input.includes('10')&&input.includes('73'));
+assert(input.includes('ввод: 7, 3')&&input.includes('10')&&input.includes('73')&&input.includes('int(input())'));
+const notReturned=coach.mismatch({cases:[{stdin:[]}]},{index:1,expected:'5',actual:'None'});
+assert(notReturned.includes('return'),notReturned);
 const undefinedVar=coach.runtime('age is not defined',{hints:['Проверь переменную']});
 assert(undefinedVar.includes('присваивание')&&undefinedVar.includes('age'));
 assert(coach.runtime('После двоеточия требуется блок с отступом.',{}).includes('четыре пробела'));

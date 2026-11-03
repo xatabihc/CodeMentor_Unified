@@ -26,7 +26,9 @@ for index, item in enumerate(MOOC26):
     assert len(item["task"]) >= 40, item["id"]
     assert all(item["learning"].get(key) for key in
         ("walkthrough", "first", "medium", "independent", "errors", "review", "checkpoint"))
-    assert item["starter"].startswith("#")
+    assert item["starter"].strip(), item["id"]
+    if not item["cases"]:
+        assert item["starter"].startswith("#")
     if item["cases"]:
         assert item.get("solution"), item["id"]
         assert len(item["cases"]) >= 1

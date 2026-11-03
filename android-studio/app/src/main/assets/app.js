@@ -144,10 +144,15 @@
    if(!rec(l.id).completed)result('','Математическая практика','Реши три небольших упражнения по порядку.');
  }
  if(hasQuiz){
-   $('checkStatus').textContent='Проверяются ответы на вопросы; код в редакторе — учебный черновик, а не выполняемая программа. Для полного Python используй CPython.';
-   $('runBtn').disabled=true;
-   $('runBtn').textContent='Запуск кода недоступен в этом уроке';
-   if(!rec(l.id).completed)result('','Проверяем понимание','Пройди вопрос по теме, затем выполни самостоятельную задачу в установленном Python.');
+   const canRun=l.checking?.mode==='python-subset'&&Array.isArray(l.cases)&&l.cases.length>0;
+   $('checkStatus').textContent=canRun?
+     'Сначала ответь на вопрос, затем проверь код: доступны несколько проверочных входов в учебном поднаборе Python.' :
+     'Вопрос проверяется офлайн. Код в редакторе — только черновик: для полноценного запуска нужен установленный CPython.';
+   $('runBtn').disabled=!canRun;
+   $('runBtn').textContent=canRun?'▶ Проверить код':'Запуск кода недоступен в этом уроке';
+   if(!rec(l.id).completed)result('','Практика и понимание',canRun?
+     'Ответь на вопрос, напиши программу и пройди тесты. Для зачёта нужны оба результата.':
+     'Ответь на вопрос, затем выполни самостоятельную задачу в установленном Python.');
    mountConcept(l);
  }
  // Scroll the menu itself, never its ancestors or the lesson document.
@@ -163,7 +168,7 @@
    const el=(tag,content)=>{const n=document.createElement(tag);if(content!==undefined)n.textContent=content;return n;};
    const remaining=questions.find(q=>!rec(q.id).completed);
    if(!remaining){
-     const summary=el('p','Вопросы пройдены. Практическая задача на Python остаётся для самостоятельного запуска в CPython.');
+     const summary=el('p',lesson.cases?.length?(rec(lesson.id+':code').completed?'Вопрос и проверка кода пройдены. Урок завершён.':'Вопрос пройден. Осталось дописать код и нажать «Проверить код».'):'Вопрос пройден. Практическая задача остаётся для самостоятельного запуска в CPython.');
      summary.className='concept-success';host.append(summary);
      return;
    }
@@ -187,7 +192,9 @@
        }
        setRec(remaining.id,{completed:1,completed_at:was.completed_at||new Date().toISOString()});
        if(questions.every(q=>rec(q.id).completed)){
-         finish(lesson,true,'Ответ на вопрос подтверждён. Самостоятельный код можно сохранить в черновике; он не проверялся.');
+         if(lesson.cases?.length&&!rec(lesson.id+':code').completed)
+           result('success','Вопрос пройден','Теперь допиши код и нажми «Проверить код». Урок будет пройден после выполнения всех тестов.');
+         else finish(lesson,true,lesson.cases?.length?'Вопрос и программные тесты выполнены.':'Ответ на вопрос подтверждён. Код остаётся самостоятельной практикой.');
          mountConcept(lesson);
        }else{
          feedback.textContent='Верно! '+remaining.explanation;
@@ -245,7 +252,15 @@
  if(l.track==='sql'){const answer=l.sql_expected;if(answer){const ok=normalizeAnswer(answer)===normalizeAnswer(code);finish(l,ok,ok?'SQL-запрос совпал с проверочным образцом. Проверка текстовая — без выполнения SQL.':'Запрос отличается от учебного образца. Проверь столбцы, условия и сортировку. Сейчас используется текстовое сопоставление, без выполнения SQL.');return}result('','SQL: самостоятельная практика','Для данного SQL-урока автоматическая проверка не настроена.');return}
  if(!Array.isArray(l.cases)||!l.cases.length){result('','Учебный материал','Автоматическая проверка для этого урока пока недоступна. Теория и черновик сохраняются; решение можно запустить в установленном Python на ноутбуке.');return}
  checking=true;$('runBtn').disabled=true;const worker=new Worker('worker.js');let done=false;const stop=()=>{if(done)return;done=true;checking=false;$('runBtn').disabled=!['python-subset','text'].includes(byId.get(state.lesson)?.checking?.mode);worker.terminate();};const timeout=setTimeout(()=>{stop();if(state.lesson!==l.id)return;result('error','Выполнение остановлено','Код выполнялся слишком долго или содержит бесконечный цикл. Проверь условия остановки.');},1800);
- worker.onmessage=e=>{if(done)return;clearTimeout(timeout);stop();const d=e.data;if(state.lesson!==l.id)return;if(d.ok)finish(l,true,`Пройдены все проверки (${d.count}). Отличная работа!`);else finish(l,false,d.error?(window.CodeMentorCoach?.runtime(d.error,l)||explainError(d.error)):(window.CodeMentorCoach?.mismatch(l,d)||`Тест ${d.index}: ожидалось «${d.expected||'(пустой вывод)'}», получилось «${d.actual||'(пустой вывод)'}». Проверь условия и вывод.`))};
+ worker.onmessage=e=>{if(done)return;clearTimeout(timeout);stop();const d=e.data;if(state.lesson!==l.id)return;if(d.ok){
+   if(l.quizzes?.length){
+     const old=rec(l.id+':code');
+     setRec(l.id+':code',{completed:1,completed_at:old.completed_at||new Date().toISOString()});
+     if(l.quizzes.every(q=>rec(q.id).completed))finish(l,true,`Пройдены все ${d.count} программных теста и проверка понимания.`);
+     else result('success','Код прошёл тесты',`Пройдены все ${d.count} проверки. Осталось ответить на вопрос по теме.`);
+     mountConcept(l);
+   }else finish(l,true,`Пройдены все проверки (${d.count}). Отличная работа!`);
+  }else finish(l,false,d.error?(window.CodeMentorCoach?.runtime(d.error,l)||explainError(d.error)):(window.CodeMentorCoach?.mismatch(l,d)||`Тест ${d.index}: ожидалось «${d.expected||'(пустой вывод)'}», получилось «${d.actual||'(пустой вывод)'}». Проверь условия и вывод.`))};
  worker.onerror=()=>{clearTimeout(timeout);stop();if(state.lesson!==l.id)return;result('error','Ошибка движка','Этот вариант Python пока не поддерживается веб-проверкой. Попробуй более простой синтаксис или настольную версию.');};
  worker.postMessage({id:l.id,code,cases:l.cases});
  }

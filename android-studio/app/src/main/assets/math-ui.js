@@ -43,16 +43,17 @@
      if(!allowed)return;
      const old=rec(exercise.id);setRec(exercise.id,{draft:JSON.stringify(answer),attempts:old.attempts+1});
      const outcome=root.CodeMentorLearning.check(exercise,answer);
-     if(!outcome.ok){notify(false,outcome.message+' '+lesson.learning.errors);return;}
+     if(!outcome.ok){const details=root.CodeMentorCoach?.math(exercise,answer,lesson,outcome)||[outcome.message,lesson.learning?.errors||''].filter(Boolean).join(' ');notify(false,details);return;}
      setRec(exercise.id,{completed:1,completed_at:old.completed_at||new Date().toISOString()});
      if(lesson.exercises.every(e=>rec(e.id).completed)){onComplete();return;}
      notify(true,'Ответ верный. Перейди к следующему небольшому упражнению.');mount(host,lesson,{rec,setRec,onComplete,notify,allowed});if(lesson.track==='statistics')root.CodeMentorStatistics.mount(host,{rec,setRec});
    };
    const simpler=el('button','Не понял'),step=el('button','Показать следующий шаг');
    for(const b of [simpler,step]){b.type='button';b.className='btn subtle';}
-   simpler.onclick=()=>{status.textContent=lesson.simpler};
-   let nextStep=0;const steps=[lesson.learning.walkthrough,lesson.learning.errors,'Теперь попробуй самостоятельно. Сверь результат с определением из теории.'];
-   step.onclick=()=>{status.textContent=steps[Math.min(nextStep++,steps.length-1)]};
+   const guide=root.CodeMentorCoach?.guideFor(lesson.id);
+   simpler.onclick=()=>{status.textContent=guide?guide.why+'\n'+guide.steps[0]:(lesson.simpler||lesson.intro)};
+   let nextStep=0;const steps=guide?[...guide.steps,guide.mistake,guide.try]:[lesson.learning?.walkthrough,lesson.learning?.errors,'Теперь попробуй самостоятельно. Сверь результат с определением из теории.'];
+   step.onclick=()=>{status.textContent=String(steps[Math.min(nextStep++,steps.length-1)]||'')};
    actions.append(check,simpler,step);host.append(actions);
  }
  root.CodeMentorMathUI={mount};

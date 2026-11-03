@@ -84,3 +84,8 @@ dialog{max-height:calc(100vh - 24px - var(--cm-safe-top) - var(--cm-safe-bottom)
 .coach-guide li{padding-left:4px;margin:8px 0}
 .result p{white-space:pre-line;line-height:1.65}
 @media(max-width:540px){.coach-guide{padding:14px 12px;margin:18px 0}.coach-guide p,.coach-guide li{font-size:15px;line-height:1.7}}
+
+.practice-extra{margin:14px 0;padding:12px 14px;border:1px solid #526681;border-radius:12px;max-width:100%}
+.practice-extra summary{cursor:pointer;min-height:48px;display:flex;align-items:center;font-weight:700;color:#d7e6fc;touch-action:manipulation}
+.practice-extra h3{margin:18px 0 5px;font-size:14px}
+.practice-extra p{line-height:1.65;white-space:pre-line}

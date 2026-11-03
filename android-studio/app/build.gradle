@@ -6,8 +6,8 @@ android {
         applicationId 'com.codementor.offline'
         minSdk 26
         targetSdk 35
-        versionCode 306
-        versionName '3.0.0-dev-d1'
+        versionCode 307
+        versionName '3.0.0-dev-teaching1'
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }

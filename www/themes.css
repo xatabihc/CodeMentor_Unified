@@ -54,3 +54,11 @@
 :root[data-theme=night] .concept-feedback.incorrect{color:#ffbec6}
 :root[data-theme=night] .concept-feedback.correct{color:#95efbf}
 .concept-success{font-weight:700;color:var(--theme-ink);line-height:1.6}
+
+/* Expand only the module the learner is studying; keep a usable short sidebar. */
+.lesson-module{border:1px solid #52668177;border-radius:9px;margin:6px 0;overflow:visible}
+.lesson-module>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:10px 12px;font-size:12px;font-weight:750;color:var(--theme-sidebar-ink);cursor:pointer;line-height:1.5;touch-action:manipulation;overflow-wrap:anywhere}
+.lesson-module>summary::after{content:'▾';font-size:15px}
+.lesson-module[open]>summary::after{content:'▴'}
+.lesson-module>summary:focus-visible{outline:2px solid var(--theme-accent);outline-offset:2px}
+.lesson-module>.lesson-link{padding-left:12px;padding-right:9px}

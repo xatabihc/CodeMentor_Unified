@@ -19,7 +19,7 @@ for(const prefix of ['la-foundation','st-foundation'])for(let i=1;i<=(prefix==='
 
 const lesson={id:'path02',cases:[{stdin:[],stdout:'Кот\nПёс'}],hints:['Сверь число команд print()']};
 const wrong=coach.mismatch(lesson,{index:1,expected:'Кот\nПёс',actual:'Кот'});
-assert(wrong.includes('строка 2')&&wrong.includes('Число строк')&&wrong.includes('Сверь число'));
+assert(wrong.includes('строка 2')&&wrong.includes('Число строк')&&wrong.includes('Одна команда'));
 const spacing=coach.mismatch(lesson,{index:1,expected:'Кот',actual:'Кот '});
 assert(spacing.includes('пробелами'),spacing);
 const input=coach.mismatch({cases:[{stdin:['7','3']}],hints:['Посмотри на вычисление']},

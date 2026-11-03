@@ -90,11 +90,14 @@
    learning.append(section);
  }
  if(l.learning){
+   const more=guide?document.createElement('details'):learning;
+   if(guide){more.className='practice-extra';const summary=document.createElement('summary');summary.textContent='Дополнительные упражнения и повторение';more.append(summary);}
    for(const [key,title] of [['walkthrough','Разбор примера'],['first','Первый шаг · самопроверка'],['medium','Практика посложнее · самопроверка'],['independent','Самостоятельная практика'],['errors','Частые ошибки'],['review','Вспоминаем пройденное'],['checkpoint','Контроль перед переходом']]){
      const heading=document.createElement('h3');heading.textContent=title;
      const text=document.createElement('p');text.textContent=Array.isArray(l.learning[key])?l.learning[key].join('\n'):l.learning[key]||'';
-     learning.append(heading,text);
+     more.append(heading,text);
    }
+   if(guide)learning.append(more);
  }
  const source=$('sourceLink');source.replaceChildren();if(l.source_url){const a=document.createElement('a');a.href=l.source_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=l.source_note||'↗ Оригинальный курс';a.style.cssText='display:inline-block;margin-top:18px;font-size:12px;color:#4c6bd1';source.appendChild(a)}
  const done=a.filter(x=>rec(x.id).completed).length;$('progressFill').style.width=(done/a.length*100)+'%';$('progressLabel').textContent=`${done} из ${a.length}`;$('prevBtn').disabled=idx<=0;$('nextBtn').disabled=idx>=a.length-1||((state.track==='path'||l.prerequisites)&&!rec(l.id).completed);

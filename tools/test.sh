@@ -9,6 +9,7 @@ python3 tools/reference_solutions.py | node tools/worker_coverage.js
 node tools/test_editor.js
 node tools/test_viewport.js
 python3 tools/test_python_data.py
+python3 tools/test_mooc26.py
 python3 tools/test_python_data.py --references | node tools/test_python_data.js
 node tools/test_navigation.js
 mkdir -p .test-tmp/native-navigation
@@ -17,6 +18,8 @@ java -cp .test-tmp/native-navigation com.codementor.offline.SafeAreaTest
 python3 tools/test_apk_assets.py
 node tools/test_learning.js
 node tools/test_coach.js
+node tools/test_theme.js
+node --check www/theme.js
 node --check www/coach.js
 python3 tools/test_math_content.py
 node tools/test_math.js

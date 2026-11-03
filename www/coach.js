@@ -257,7 +257,7 @@
   }
 });
   function short(value){const s=String(value??'');return s.length>125?s.slice(0,122)+'…':s;}
-  function lessonTip(lesson){return lesson?.learning?.errors||lesson?.hints?.[0]||guides[lesson?.id]?.mistake||'Сверь результат с разбором примера выше.';}
+  function lessonTip(lesson){return guides[lesson?.id]?.mistake||lesson?.learning?.errors||lesson?.hints?.[0]||'Сверь результат с разбором примера выше.';}
   function runtime(error,lesson){
     const msg=String(error||'');
     const rules=[
@@ -299,7 +299,7 @@
       }
     }
     if(['numeric','statistics'].includes(exercise.type))
-      return 'Число пока не совпало. Проверь, какую величину спрашивают, порядок действий и правило округления.\n\nСледующий шаг: '+(lesson?.learning?.walkthrough||lessonTip(lesson));
+      return 'Число пока не совпало. Проверь, какую величину спрашивают, порядок действий и правило округления.\n\nСледующий шаг: '+(Array.isArray(lesson?.learning?.walkthrough)?lesson.learning.walkthrough.join(' → '):(lesson?.learning?.walkthrough||lessonTip(lesson)));
     return String(outcome?.message||'Ответ пока не засчитан.')+'\n\nСледующий шаг: '+lessonTip(lesson);
   }
   root.CodeMentorCoach={guides,guideFor:id=>guides[id]||null,runtime,mismatch,math};

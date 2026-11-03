@@ -274,3 +274,13 @@ BY_ID.update({item["id"]: item for item in ADVANCED})
 from .content_path import PATH, STAGES
 ALL.extend(PATH)
 BY_ID.update({item['id']: item for item in PATH})
+
+# 3.0 D1: original data-oriented practice, no university texts/tests copied.
+from .content_data import DATA_PYTHON
+ALL.extend(DATA_PYTHON)
+BY_ID.update({item['id']: item for item in DATA_PYTHON})
+
+# Expanded original MOOC 2026 curriculum: all 14 syllabus parts, conceptual checks.
+from .content_mooc26_full import MOOC26
+ALL.extend(MOOC26)
+BY_ID.update({item['id']: item for item in MOOC26})

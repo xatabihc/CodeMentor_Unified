@@ -7,11 +7,27 @@ python3 tools/check_catalog.py
 python3 tools/reference_solutions.py | node tools/test_runner.js
 python3 tools/reference_solutions.py | node tools/worker_coverage.js
 node tools/test_editor.js
+node tools/test_viewport.js
+python3 tools/test_python_data.py
+python3 tools/test_mooc26.py
+python3 tools/test_python_data.py --references | node tools/test_python_data.js
 node tools/test_navigation.js
 mkdir -p .test-tmp/native-navigation
 javac -d .test-tmp/native-navigation android-studio/app/src/main/java/com/codementor/offline/SafeArea.java tools/java/SafeAreaTest.java
 java -cp .test-tmp/native-navigation com.codementor.offline.SafeAreaTest
 python3 tools/test_apk_assets.py
+node tools/test_learning.js
+node tools/test_coach.js
+node tools/test_theme.js
+node --check www/theme.js
+node --check www/coach.js
+python3 tools/test_math_content.py
+node tools/test_math.js
+python3 tools/algebra_oracle.py | node tools/test_algebra.js --stdin
+node tools/test_statistics.js
+node tools/test_c2.js
+node --check www/statistics-advanced.js
+node --check www/math-ui.js
 node tools/test_progress.js
 node tools/test_app_storage.js
 python3 tools/test_legacy_progress.py

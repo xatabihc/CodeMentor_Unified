@@ -1,10 +1,25 @@
 (() => {
  'use strict';
- const lessons=window.CODEMENTOR_LESSONS||[];
+ const lessons=[...(window.CODEMENTOR_LESSONS||[]),...(window.CODEMENTOR_MATH_LESSONS||[])];
  const byId=new Map(lessons.map(l=>[l.id,l]));
- const tracks=[['path','🌱','С нуля'],['python','🐍','Python'],['mooc','🎓','MOOC 2026'],['debug','🔧','Исправление ошибок'],['projects','🧩','Мини-проекты'],['linux','⌨','Linux'],['sql','🗃','SQLite'],['advanced','📦','Классы и файлы']];
+ const tracks=[['path','🌱','С нуля'],['python','🐍','Python'],['mooc','🎓','MOOC 2026 · 14 частей'],['debug','🔧','Исправление ошибок'],['projects','🧩','Мини-проекты'],['linux','⌨','Linux'],['sql','🗃','SQLite'],['advanced','📦','Классы и файлы'],['python-data','📊','Python для данных'],['linear-algebra','▦','Линейная алгебра'],['statistics','▥','Первые данные']];
  const $=x=>document.getElementById(x);
  let state={records:{},track:'path',lesson:'path01'};
+ let activeCourse='python';
+ function renderCourses(){
+   const engine=window.CodeMentorLearning;if(!engine)return;
+   const host=$('courses');host.replaceChildren();
+   for(const course of engine.catalog(lessons)){
+     const b=document.createElement('button');b.className='track'+(activeCourse===course.id?' active':'');
+     const ids=course.levels.flatMap(x=>x.modules.flatMap(m=>m.lessons.map(l=>l.id)));
+     b.textContent=course.title+' · '+ids.filter(id=>rec(id).completed).length+'/'+ids.length;
+     b.onclick=()=>{saveDraft();activeCourse=course.id;state.track=course.id==='python'?'path':course.id;pickStart();save();render();closeNav();};host.appendChild(b);
+   }
+   const ready=lessons.some(l=>engine.courseForTrack(l.track)===activeCourse);
+   $('courseStatus').textContent=ready?(activeCourse==='python'?'Все прежние уроки сохранены. Полный путь по темам MOOC 2026 находится в разделе «MOOC 2026».':'Уровень «С нуля» · '+(activeCourse==='statistics'?'Первые данные':'Модули матричных операций')):'Курс готовится. Учебные модули пока не опубликованы.';
+   document.querySelector('.panels')?.toggleAttribute('hidden',!ready);
+   if(!ready){$('lessonTitle').textContent=engine.catalog(lessons).find(c=>c.id===activeCourse).title;$('lessonIntro').textContent='Начнём с нулевого уровня. Прогресс других направлений сохраняется.';}
+ }
  const storageKey='codementor-unified-v1';let deferredInstall=null,checking=false,recoveryRequired=false,lastSavedAt=0;
  function restore(){
    const bridge=window.AndroidBridge;
@@ -21,6 +36,7 @@
    candidates.sort((a,b)=>(b.data.saved_at||0)-(a.data.saved_at||0)||a.index-b.index);
    if(candidates.length){
      const selected=candidates[0],x=selected.data;
+     if(window.CodeMentorLearning?.courses.some(c=>c.id===x.course))activeCourse=x.course;
      state.records=x.records;lastSavedAt=x.saved_at||0;
      if(tracks.some(t=>t[0]===x.track))state.track=x.track;
      if(selected.index>0&&failed)$('saveStatus').textContent='Прогресс восстановлен из локальной копии — экспортируй JSON';
@@ -31,7 +47,7 @@
  function save(){
    if(recoveryRequired){$('saveStatus').textContent='Запись приостановлена: импортируй резервный JSON или экспортируй текущую работу.';return false;}
    lastSavedAt=Math.max(Date.now(),lastSavedAt+1);
-   const data=JSON.stringify({version:1,records:state.records,track:state.track,saved_at:lastSavedAt});
+   const data=JSON.stringify({version:1,records:state.records,track:state.track,course:activeCourse,saved_at:lastSavedAt});
    let stored=false;
    try{
      const previous=localStorage.getItem(storageKey);
@@ -46,28 +62,149 @@
  }
  function rec(id){return (Object.hasOwn(state.records,id)?state.records[id]:null)||{draft:null,completed:0,attempts:0,hint_level:0,completed_at:null}}
  function setRec(id,patch){state.records[id]={...rec(id),...patch};save();}
- function inTrack(){return lessons.filter(l=>l.track===state.track)}
- function unlocked(l){if(l.track!=='path')return true;const sequence=lessons.filter(x=>x.track==='path'),index=sequence.findIndex(x=>x.id===l.id);return index<=0||!!rec(sequence[index-1].id).completed}
- function pickStart(){let seq=inTrack();let next=seq.find(l=>!rec(l.id).completed)||seq[seq.length-1];state.lesson=next.id;}
+ function inTrack(){return lessons.filter(l=>l.track===state.track&&(!window.CodeMentorLearning||window.CodeMentorLearning.courseForTrack(l.track)===activeCourse))}
+ function unlocked(l){if(l.prerequisites)return l.prerequisites.every(id=>!!rec(id).completed);if(l.track!=='path')return true;const sequence=lessons.filter(x=>x.track==='path'),index=sequence.findIndex(x=>x.id===l.id);return index<=0||!!rec(sequence[index-1].id).completed}
+ function pickStart(){let seq=inTrack();if(!seq.length)return;let next=seq.find(l=>!rec(l.id).completed)||seq[seq.length-1];state.lesson=next.id;}
  function esc(t){return String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
- function renderTracks(){const host=$('tracks');host.replaceChildren();for(const [key,icon,title] of tracks){const a=lessons.filter(x=>x.track===key);const done=a.filter(x=>rec(x.id).completed).length;const b=document.createElement('button');b.className='track'+(state.track===key?' active':'');b.innerHTML=`<span class="trackicon">${icon}</span><span>${title}</span><span class="track-count">${done}/${a.length}</span>`;b.onclick=()=>{saveDraft();state.track=key;state.lesson=key==='path'?(a.find(x=>!rec(x.id).completed)||a[0]).id:a[0].id;save();render();closeNav();};host.appendChild(b)}}
- function renderList(){const list=$('lessonList');list.replaceChildren();const items=inTrack();$('sectionName').textContent=tracks.find(t=>t[0]===state.track)?.[2]||'Уроки';$('sectionCount').textContent=items.filter(x=>rec(x.id).completed).length+'/'+items.length;for(let i=0;i<items.length;i++){const l=items[i],locked=!unlocked(l),done=!!rec(l.id).completed;const b=document.createElement('button');b.disabled=locked;b.className=`lesson-link${state.lesson===l.id?' active':''}${done?' done':''}${locked?' locked':''}`;b.innerHTML=`<span class="lesson-icon">${done?'✓':locked?'🔒':i+1}</span><span class="lesson-name"><strong>${esc(l.title)}</strong><small>${esc(l.level||l.module||'Практика')}</small></span>`;b.onclick=()=>{saveDraft();state.lesson=l.id;render();closeNav()};list.appendChild(b)}}
- function saveDraft(){const current=byId.get(state.lesson);if(current&&$('editor')){const v=$('editor').value;if(v!==rec(current.id).draft)setRec(current.id,{draft:v})}}
+ function renderTracks(){renderCourses();const host=$('tracks');host.replaceChildren();for(const [key,icon,title] of tracks.filter(t=>!window.CodeMentorLearning||window.CodeMentorLearning.courseForTrack(t[0])===activeCourse)){const a=lessons.filter(x=>x.track===key);const done=a.filter(x=>rec(x.id).completed).length;const b=document.createElement('button');b.className='track'+(state.track===key?' active':'');b.innerHTML=`<span class="trackicon">${icon}</span><span>${title}</span><span class="track-count">${done}/${a.length}</span>`;b.setAttribute?.('data-track',key);b.onclick=()=>{saveDraft();state.track=key;state.lesson=key==='path'?(a.find(x=>!rec(x.id).completed)||a[0]).id:a[0].id;save();render();closeNav();};host.appendChild(b)}}
+ function renderList(){
+  const list=$('lessonList');list.replaceChildren();
+  const items=inTrack();
+  $('sectionName').textContent=tracks.find(t=>t[0]===state.track)?.[2]||'Уроки';
+  $('sectionCount').textContent=items.filter(x=>rec(x.id).completed).length+'/'+items.length;
+  const group=state.track==='mooc',activeModule=byId.get(state.lesson)?.module;
+  let lastModule=null,groupElement=null;
+  for(let i=0;i<items.length;i++){
+    const l=items[i];
+    if(group&&l.module!==lastModule){
+      lastModule=l.module;
+      const section=document.createElement('details');section.className='lesson-module';
+      section.open=l.module===activeModule;
+      const summary=document.createElement('summary');
+      const same=items.filter(item=>item.module===l.module);
+      summary.textContent=(l.module||'Практика')+' · '+same.filter(x=>rec(x.id).completed).length+'/'+same.length;
+      section.append(summary);list.append(section);groupElement=section;
+    }else if(!group&&l.exercises&&(i===0||items[i-1].module!==l.module)){
+      const heading=document.createElement('h3');heading.className='module-heading';heading.textContent=l.module;list.append(heading);
+    }
+    const locked=!unlocked(l),done=!!rec(l.id).completed,b=document.createElement('button');
+    b.setAttribute?.('data-lesson-id',l.id);
+    b.disabled=locked&&activeCourse==='python'&&!l.prerequisites;
+    b.className=`lesson-link${state.lesson===l.id?' active':''}${done?' done':''}${locked?' locked':''}`;
+    b.innerHTML=`<span class="lesson-icon">${done?'✓':locked?'🔒':i+1}</span><span class="lesson-name"><strong>${esc(l.title)}</strong><small>${esc(l.level||l.module||'Практика')}</small></span>`;
+    b.onclick=()=>{saveDraft();state.lesson=l.id;render();closeNav()};
+    (groupElement||list).append(b);
+  }
+ }
+ function saveDraft(){const current=byId.get(state.lesson);if(current&&!current.exercises&&$('editor')){const v=$('editor').value;if(v!==rec(current.id).draft)setRec(current.id,{draft:v})}}
  function result(kind,title,msg){const h=$('result');h.className='result'+(kind?' '+kind:'');h.replaceChildren();const heading=document.createElement('div');heading.className='result-title';heading.textContent=title;const p=document.createElement('p');p.textContent=msg;h.append(heading,p)}
- function render(){renderTracks();renderList();let l=byId.get(state.lesson)||inTrack()[0];if(!l)return;state.lesson=l.id;let a=inTrack(),idx=a.findIndex(x=>x.id===l.id);let trackTitle=tracks.find(t=>t[0]===state.track)?.[2]||'Python';$('crumb').textContent=trackTitle;$('eyebrow').textContent=(l.module||trackTitle).toUpperCase()+(l.level?' · '+l.level.toUpperCase():'');$('lessonTitle').textContent=l.title;$('lessonIntro').textContent=l.intro||'';$('theoryHeading').textContent=l.title;$('theoryLines').replaceChildren();for(let s of l.theory||[]){const li=document.createElement('li');li.textContent=s;$('theoryLines').appendChild(li)}$('exampleCode').textContent=l.example||'—';$('taskText').textContent=l.task||'';$('fileLabel').textContent=l.track==='linux'?'terminal.sh':l.track==='sql'?'query.sql':'main.py';$('editor').value=rec(l.id).draft??l.starter??'';$('hintBtn').disabled=!(l.hints||[]).length;const hints=$('hints');hints.hidden=true;hints.textContent='';const learning=$('learningDetails');learning.replaceChildren();
+ function render(){renderTracks();renderList();if(!inTrack().length){$('prevBtn').disabled=true;$('nextBtn').disabled=true;$('progressLabel').textContent='Модули готовятся';$('progressFill').style.width='0%';return;}let l=byId.get(state.lesson)||inTrack()[0];if(!l)return;state.lesson=l.id;let a=inTrack(),idx=a.findIndex(x=>x.id===l.id);let trackTitle=tracks.find(t=>t[0]===state.track)?.[2]||'Python';$('crumb').textContent=trackTitle;$('eyebrow').textContent=(l.module||trackTitle).toUpperCase()+(l.level?' · '+l.level.toUpperCase():'');$('lessonTitle').textContent=l.title;$('lessonIntro').textContent=l.intro||'';$('theoryHeading').textContent=l.title;$('theoryLines').replaceChildren();for(let s of l.theory||[]){const li=document.createElement('li');li.textContent=s;$('theoryLines').appendChild(li)}$('exampleCode').textContent=l.example||'—';$('taskText').textContent=l.task||'';$('fileLabel').textContent=l.track==='linux'?'terminal.sh':l.track==='sql'?'query.sql':'main.py';$('editor').value=rec(l.id).draft??l.starter??'';$('hintBtn').disabled=!(l.hints||[]).length;const hints=$('hints');hints.hidden=true;hints.textContent='';const learning=$('learningDetails');learning.replaceChildren();
+ const guide=window.CodeMentorCoach?.guideFor(l.id);
+ if(guide){
+   const section=document.createElement('section');section.className='coach-guide';section.setAttribute('aria-label','Подробный разбор');
+   function paragraph(title,value){
+     const h=document.createElement('h3');h.textContent=title;
+     const p=document.createElement('p');p.textContent=value;section.append(h,p);
+   }
+   paragraph('Чему научимся',guide.goal);
+   paragraph('Зачем это нужно',guide.why);
+   const h=document.createElement('h3');h.textContent='Разбираем по шагам';section.append(h);
+   const list=document.createElement('ol');
+   for(const step of guide.steps){const li=document.createElement('li');li.textContent=step;list.appendChild(li);}
+   section.append(list);
+   paragraph('Проверь понимание',guide.prediction);
+   paragraph('Типичная ошибка',guide.mistake);
+   paragraph('Твой следующий шаг',guide.try);
+   learning.append(section);
+ }
  if(l.learning){
+   const more=guide?document.createElement('details'):learning;
+   if(guide){more.className='practice-extra';const summary=document.createElement('summary');summary.textContent='Дополнительные упражнения и повторение';more.append(summary);}
    for(const [key,title] of [['walkthrough','Разбор примера'],['first','Первый шаг · самопроверка'],['medium','Практика посложнее · самопроверка'],['independent','Самостоятельная практика'],['errors','Частые ошибки'],['review','Вспоминаем пройденное'],['checkpoint','Контроль перед переходом']]){
      const heading=document.createElement('h3');heading.textContent=title;
      const text=document.createElement('p');text.textContent=Array.isArray(l.learning[key])?l.learning[key].join('\n'):l.learning[key]||'';
-     learning.append(heading,text);
+     more.append(heading,text);
    }
+   if(guide)learning.append(more);
  }
- const source=$('sourceLink');source.replaceChildren();if(l.source_url){const a=document.createElement('a');a.href=l.source_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='↗ Оригинальный курс';a.style.cssText='display:inline-block;margin-top:18px;font-size:12px;color:#4c6bd1';source.appendChild(a)}
- const done=a.filter(x=>rec(x.id).completed).length;$('progressFill').style.width=(done/a.length*100)+'%';$('progressLabel').textContent=`${done} из ${a.length}`;$('prevBtn').disabled=idx<=0;$('nextBtn').disabled=idx>=a.length-1||(state.track==='path'&&!rec(l.id).completed);
+ const source=$('sourceLink');source.replaceChildren();if(l.source_url){const a=document.createElement('a');a.href=l.source_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=l.source_note||'↗ Оригинальный курс';a.style.cssText='display:inline-block;margin-top:18px;font-size:12px;color:var(--theme-accent,#4c6bd1)';source.appendChild(a)}
+ const done=a.filter(x=>rec(x.id).completed).length;$('progressFill').style.width=(done/a.length*100)+'%';$('progressLabel').textContent=`${done} из ${a.length}`;$('prevBtn').disabled=idx<=0;$('nextBtn').disabled=idx>=a.length-1||((state.track==='path'||l.prerequisites)&&!rec(l.id).completed);
  $('nextBtn').textContent=idx===a.length-1?'Конец раздела':'Дальше →';const unavailable=!['python-subset','text'].includes(l.checking?.mode);$('runBtn').disabled=unavailable;$('runBtn').textContent=unavailable?'Автопроверка недоступна':'▶ Проверить';$('checkStatus').textContent=l.checking?.reason||'Проверка для этого урока ещё не подтверждена.';
  if(unavailable)result('','Самостоятельная практика',l.checking?.reason||'Автоматическая проверка для этого урока ещё не подтверждена.');else if(rec(l.id).completed)result('success','Урок пройден','Решение уже было засчитано. Можешь повторить урок или перейти дальше.');else result('','Готов к практике','Допиши код и нажми «Проверить». Сначала попробуй самостоятельно.');
- const current=document.querySelector('.lesson-link.active');current?.scrollIntoView({block:'nearest'});
+ const isMath=!!l.exercises;
+ const hasQuiz=Array.isArray(l.quizzes)&&l.quizzes.length>0;
+ $('mathPractice').hidden=!isMath;
+ $('conceptPractice').hidden=!hasQuiz;
+ for(const selector of ['.editor-head','#editor','#runBtn','#resetBtn'])document.querySelector(selector)?.toggleAttribute('hidden',isMath);
+ if(isMath){
+   $('checkStatus').textContent='Локальная проверка числового ответа, размера и значений матрицы.';
+   $('nextBtn').disabled=idx>=a.length-1||!rec(l.id).completed;
+   window.CodeMentorMathUI.mount($('mathPractice'),l,{rec,setRec,allowed:unlocked(l),notify:(ok,msg)=>result(ok?'success':'error',ok?'Правильно':'Попробуй ещё раз',msg),onComplete:()=>{finish(l,true,'Все упражнения урока выполнены.');render();}});
+   if(l.track==='statistics')window.CodeMentorStatistics.mount($('mathPractice'),{rec,setRec});
+   if(!rec(l.id).completed)result('','Математическая практика','Реши три небольших упражнения по порядку.');
+ }
+ if(hasQuiz){
+   const canRun=l.checking?.mode==='python-subset'&&Array.isArray(l.cases)&&l.cases.length>0;
+   $('checkStatus').textContent=canRun?
+     'Сначала ответь на вопрос, затем проверь код: доступны несколько проверочных входов в учебном поднаборе Python.' :
+     'Вопрос проверяется офлайн. Код в редакторе — только черновик: для полноценного запуска нужен установленный CPython.';
+   $('runBtn').disabled=!canRun;
+   $('runBtn').textContent=canRun?'▶ Проверить код':'Запуск кода недоступен в этом уроке';
+   if(!rec(l.id).completed)result('','Практика и понимание',canRun?
+     'Ответь на вопрос, напиши программу и пройди тесты. Для зачёта нужны оба результата.':
+     'Ответь на вопрос, затем выполни самостоятельную задачу в установленном Python.');
+   mountConcept(l);
+ }
+ // Scroll the menu itself, never its ancestors or the lesson document.
+ const current=document.querySelector('.lesson-link.active'),menu=$('sidebar');
+ if(current&&menu?.getBoundingClientRect){const r=current.getBoundingClientRect(),m=menu.getBoundingClientRect();if(r.bottom>m.bottom||r.top<m.top)menu.scrollTop+=r.top-m.top-90;}
  window.scrollTo(0,0);
+ }
+ function mountConcept(lesson){
+   const host=$('conceptPractice');
+   if(!host)return;
+   host.hidden=false;host.replaceChildren();
+   const questions=lesson.quizzes||[];
+   const el=(tag,content)=>{const n=document.createElement(tag);if(content!==undefined)n.textContent=content;return n;};
+   const remaining=questions.find(q=>!rec(q.id).completed);
+   if(!remaining){
+     const summary=el('p',lesson.cases?.length?(rec(lesson.id+':code').completed?'Вопрос и проверка кода пройдены. Урок завершён.':'Вопрос пройден. Осталось дописать код и нажать «Проверить код».'):'Вопрос пройден. Практическая задача остаётся для самостоятельного запуска в CPython.');
+     summary.className='concept-success';host.append(summary);
+     return;
+   }
+   const number=questions.indexOf(remaining)+1;
+   const title=el('h3','Проверка понимания · вопрос '+number+' из '+questions.length);
+   const question=el('p',remaining.question);question.className='concept-question';
+   const answers=el('div');answers.className='concept-choices';
+   const feedback=el('p');feedback.className='concept-feedback';feedback.setAttribute('role','status');
+   host.append(title,question,answers,feedback);
+   for(const [index,label] of remaining.options.entries()){
+     const button=el('button',label);button.type='button';button.className='concept-choice';
+     button.disabled=!unlocked(lesson);
+     button.onclick=()=>{
+       if(!unlocked(lesson))return;
+       const was=rec(remaining.id);
+       setRec(remaining.id,{attempts:(was.attempts||0)+1});
+       if(index!==remaining.answer){
+         feedback.textContent='Пока неверно. '+remaining.wrongExplanation+'\n\nПодсказка: '+remaining.hint;
+         feedback.className='concept-feedback incorrect';
+         return;
+       }
+       setRec(remaining.id,{completed:1,completed_at:was.completed_at||new Date().toISOString()});
+       if(questions.every(q=>rec(q.id).completed)){
+         if(lesson.cases?.length&&!rec(lesson.id+':code').completed)
+           result('success','Вопрос пройден','Теперь допиши код и нажми «Проверить код». Урок будет пройден после выполнения всех тестов.');
+         else finish(lesson,true,lesson.cases?.length?'Вопрос и программные тесты выполнены.':'Ответ на вопрос подтверждён. Код остаётся самостоятельной практикой.');
+         mountConcept(lesson);
+       }else{
+         feedback.textContent='Верно! '+remaining.explanation;
+         feedback.className='concept-feedback correct';
+         const next=el('button','Следующий вопрос →');next.type='button';next.className='btn primary';
+         next.onclick=()=>mountConcept(lesson);answers.replaceChildren(next);
+       }
+     };
+     answers.append(button);
+   }
  }
  function mobileNav(){return window.matchMedia('(max-width:840px), (max-width:1024px) and (max-height:500px)').matches}
  function openNav(){
@@ -110,12 +247,20 @@
    else media.addListener(()=>closeNav());
  }
  function normalizeAnswer(s){return String(s).trim().replace(/;$/,'').replace(/\s+/g,' ').toLowerCase()}
- function check(){if(checking)return;const l=byId.get(state.lesson);if(!l)return;if(!['python-subset','text'].includes(l.checking?.mode)){result('','Самостоятельная практика',l.checking?.reason||'Автоматическая проверка для этого урока ещё не подтверждена.');return}const code=$('editor').value;setRec(l.id,{draft:code,attempts:(rec(l.id).attempts||0)+1});if(!code.trim()){result('error','Пока пусто','Напиши или дополни код перед проверкой.');return}
+ function check(){if(checking||activeCourse!=='python')return;const l=byId.get(state.lesson);if(!l)return;if(!unlocked(l)){result('','Сначала предыдущий урок','Пройди предыдущий обязательный шаг. Теория и черновик доступны.');return;}if(!['python-subset','text'].includes(l.checking?.mode)){result('','Самостоятельная практика',l.checking?.reason||'Автоматическая проверка для этого урока ещё не подтверждена.');return}const code=$('editor').value;setRec(l.id,{draft:code,attempts:(rec(l.id).attempts||0)+1});if(!code.trim()){result('error','Пока пусто','Напиши или дополни код перед проверкой.');return}
  if(l.track==='linux'){const ok=(l.answers||[]).some(a=>normalizeAnswer(a)===normalizeAnswer(code));finish(l,ok,ok?'Команда правильная. Она проверена как текст — не выполнялась на ноутбуке.':'Команда не совпала с ожидаемым вариантом. Посмотри теорию и попробуй ещё раз.');return}
  if(l.track==='sql'){const answer=l.sql_expected;if(answer){const ok=normalizeAnswer(answer)===normalizeAnswer(code);finish(l,ok,ok?'SQL-запрос совпал с проверочным образцом. Проверка текстовая — без выполнения SQL.':'Запрос отличается от учебного образца. Проверь столбцы, условия и сортировку. Сейчас используется текстовое сопоставление, без выполнения SQL.');return}result('','SQL: самостоятельная практика','Для данного SQL-урока автоматическая проверка не настроена.');return}
  if(!Array.isArray(l.cases)||!l.cases.length){result('','Учебный материал','Автоматическая проверка для этого урока пока недоступна. Теория и черновик сохраняются; решение можно запустить в установленном Python на ноутбуке.');return}
  checking=true;$('runBtn').disabled=true;const worker=new Worker('worker.js');let done=false;const stop=()=>{if(done)return;done=true;checking=false;$('runBtn').disabled=!['python-subset','text'].includes(byId.get(state.lesson)?.checking?.mode);worker.terminate();};const timeout=setTimeout(()=>{stop();if(state.lesson!==l.id)return;result('error','Выполнение остановлено','Код выполнялся слишком долго или содержит бесконечный цикл. Проверь условия остановки.');},1800);
- worker.onmessage=e=>{if(done)return;clearTimeout(timeout);stop();const d=e.data;if(state.lesson!==l.id)return;if(d.ok)finish(l,true,`Пройдены все проверки (${d.count}). Отличная работа!`);else finish(l,false,d.error?explainError(d.error):`Тест ${d.index}: ожидалось «${d.expected||'(пустой вывод)'}», получилось «${d.actual||'(пустой вывод)'}». Проверь условия и вывод.`)};
+ worker.onmessage=e=>{if(done)return;clearTimeout(timeout);stop();const d=e.data;if(state.lesson!==l.id)return;if(d.ok){
+   if(l.quizzes?.length){
+     const old=rec(l.id+':code');
+     setRec(l.id+':code',{completed:1,completed_at:old.completed_at||new Date().toISOString()});
+     if(l.quizzes.every(q=>rec(q.id).completed))finish(l,true,`Пройдены все ${d.count} программных теста и проверка понимания.`);
+     else result('success','Код прошёл тесты',`Пройдены все ${d.count} проверки. Осталось ответить на вопрос по теме.`);
+     mountConcept(l);
+   }else finish(l,true,`Пройдены все проверки (${d.count}). Отличная работа!`);
+  }else finish(l,false,d.error?(window.CodeMentorCoach?.runtime(d.error,l)||explainError(d.error)):(window.CodeMentorCoach?.mismatch(l,d)||`Тест ${d.index}: ожидалось «${d.expected||'(пустой вывод)'}», получилось «${d.actual||'(пустой вывод)'}». Проверь условия и вывод.`))};
  worker.onerror=()=>{clearTimeout(timeout);stop();if(state.lesson!==l.id)return;result('error','Ошибка движка','Этот вариант Python пока не поддерживается веб-проверкой. Попробуй более простой синтаксис или настольную версию.');};
  worker.postMessage({id:l.id,code,cases:l.cases});
  }

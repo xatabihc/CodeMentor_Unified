@@ -28,6 +28,11 @@ class PackagingTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Stale'):
                 verify_assets(archive)
 
+    def test_stale_mathematics(self):
+        with self.fixture(changed='math-lessons.js') as archive:
+            with self.assertRaisesRegex(ValueError, 'Stale'):
+                verify_assets(archive)
+
     def test_stale_extra(self):
         with self.fixture(extra=True) as archive:
             with self.assertRaisesRegex(ValueError, 'stale='):

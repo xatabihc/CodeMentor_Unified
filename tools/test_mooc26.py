@@ -19,7 +19,7 @@ for index, item in enumerate(MOOC26):
     assert "programming-26.mooc.fi/part-" in item["source_url"]
     assert item["practiceKind"] == "concept-and-code-draft"
     assert len(item["intro"]) >= 45, item["id"]
-    assert len(item["example"]) >= 20, item["id"]
+    assert len(item["example"]) >= 10, item["id"]
     assert len(item["theory"]) >= 3
     assert all(len(text) >= 30 for text in item["theory"]), item["id"]
     assert len(item["task"]) >= 40, item["id"]

@@ -5,7 +5,7 @@ require('../www/coach.js');
 const coach=globalThis.CodeMentorCoach;
 const required=['goal','why','steps','prediction','mistake','try'];
 const ids=Object.keys(coach.guides);
-assert(ids.length>=15,'the first introductory modules should have real lessons');
+assert(ids.length>=25,'all beginner foundation modules should have worked explanations');
 for(const id of ids){
   const guide=coach.guideFor(id);
   assert(required.every(key=>guide[key]),id+' missing pedagogical section');

@@ -571,6 +571,11 @@
     else if(e.length!==a.length)diagnosis='Число строк не совпадает. Проверь количество print(), их расположение внутри циклов и лишние сообщения.';
     else if(e[line]?.trim()===a[line]?.trim())diagnosis='Значения похожи, но отличаются пробелами. Проверь лишний пробел или разделитель.';
     else if(e[line]?.toLowerCase()===a[line]?.toLowerCase())diagnosis='Буквы совпадают, но регистр отличается. Python-проверка учитывает заглавные и строчные буквы.';
+    if(inputs.length>=2&&inputs.every(v=>/^-?\d+$/.test(String(v)))&&actual.trim()===inputs.join('')&&actual.trim()!==expected.trim())
+      diagnosis='Похоже, числа склеились как текст. input() возвращает строку: для сложения целых чисел используй int(input()) для каждого ввода.';
+    if(actual.trim()==='None'&&expected.trim()!=='None')
+      diagnosis='Похоже, функция ничего не вернула. print() показывает значение, а return передаёт результат вызывающему коду.';
+
     return 'Не прошёл пример № '+index+' ('+(inputs.length?'ввод: '+inputs.map(short).join(', '):'без ввода')+').\n'+
       'Первое несовпадение — строка '+(line+1)+': ожидалось «'+short(e[line]??'(строки нет)')+'», получилось «'+short(a[line]??'(строки нет)')+'».\n\n'+
       'Почему это важно: '+diagnosis+'\n\nСледующий шаг: '+lessonTip(lesson);

@@ -4,7 +4,7 @@
   --theme-main:#f2f5fb;--theme-surface:#fff;--theme-ink:#192944;
   --theme-sidebar:#101b30;--theme-sidebar-active:#273958;--theme-sidebar-ink:#bac8df;
   --theme-border:#e0e6f0;--theme-muted:#70819d;
-  accent-color:var(--theme-accent);
+  accent-color:var(--theme-accent);color-scheme:light;
 }
 :root[data-theme=blue]{--theme-accent:#2563eb;--theme-strong:#1d4ed8;--theme-soft:#e4eeff;--theme-main:#eff6ff;--theme-surface:#fff;--theme-ink:#172d55;--theme-sidebar:#102a4c;--theme-sidebar-active:#1b4574;--theme-border:#d3e3fc;}
 :root[data-theme=red]{--theme-accent:#dc3247;--theme-strong:#ae1e38;--theme-soft:#ffe8ed;--theme-main:#fff5f6;--theme-surface:#fff;--theme-ink:#4c1e2a;--theme-sidebar:#371821;--theme-sidebar-active:#69303d;--theme-border:#f5d6dd;}
@@ -62,3 +62,8 @@
 .lesson-module[open]>summary::after{content:'▴'}
 .lesson-module>summary:focus-visible{outline:2px solid var(--theme-accent);outline-offset:2px}
 .lesson-module>.lesson-link{padding-left:12px;padding-right:9px}
+
+dialog{background:var(--theme-surface);color:var(--theme-ink);border-color:var(--theme-border)}
+dialog input,dialog select{background:var(--theme-surface);color:var(--theme-ink)}
+:root[data-theme=night] .theme-choice{background:#243651}
+:root[data-theme=night] .practice-extra{border-color:#4d668a}

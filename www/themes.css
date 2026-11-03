@@ -1,0 +1,43 @@
+/* Colour themes. Change only visual tokens: lesson progress remains untouched. */
+:root{
+  --theme-accent:#4563e7;--theme-strong:#304ccc;--theme-soft:#eaf0ff;
+  --theme-main:#f2f5fb;--theme-surface:#fff;--theme-ink:#192944;
+  --theme-sidebar:#101b30;--theme-sidebar-active:#273958;--theme-sidebar-ink:#bac8df;
+  --theme-border:#e0e6f0;--theme-muted:#70819d;
+  accent-color:var(--theme-accent);
+}
+:root[data-theme=blue]{--theme-accent:#2563eb;--theme-strong:#1d4ed8;--theme-soft:#e4eeff;--theme-main:#eff6ff;--theme-surface:#fff;--theme-ink:#172d55;--theme-sidebar:#102a4c;--theme-sidebar-active:#1b4574;--theme-border:#d3e3fc;}
+:root[data-theme=red]{--theme-accent:#dc3247;--theme-strong:#ae1e38;--theme-soft:#ffe8ed;--theme-main:#fff5f6;--theme-surface:#fff;--theme-ink:#4c1e2a;--theme-sidebar:#371821;--theme-sidebar-active:#69303d;--theme-border:#f5d6dd;}
+:root[data-theme=green]{--theme-accent:#148b61;--theme-strong:#086c49;--theme-soft:#e2f7ec;--theme-main:#f1faf5;--theme-surface:#fff;--theme-ink:#163d2e;--theme-sidebar:#123a2b;--theme-sidebar-active:#20533d;--theme-border:#cfe8da;}
+:root[data-theme=purple]{--theme-accent:#8051dc;--theme-strong:#6331b7;--theme-soft:#f0e9ff;--theme-main:#f8f5ff;--theme-surface:#fff;--theme-ink:#352352;--theme-sidebar:#2d214c;--theme-sidebar-active:#46346c;--theme-border:#e5daf9;}
+:root[data-theme=amber]{--theme-accent:#bd5d0a;--theme-strong:#96500e;--theme-soft:#fff0d8;--theme-main:#fffaed;--theme-surface:#fff;--theme-ink:#53321a;--theme-sidebar:#3f2c20;--theme-sidebar-active:#64452e;--theme-border:#f1e1bf;}
+:root[data-theme=night]{--theme-accent:#93b1ff;--theme-strong:#b3c9ff;--theme-soft:#233754;--theme-main:#101b2d;--theme-surface:#1b2a40;--theme-ink:#ecf2fc;--theme-sidebar:#0a1120;--theme-sidebar-active:#294367;--theme-sidebar-ink:#c2d3ee;--theme-border:#3e5270;--theme-muted:#aabbd8;color-scheme:dark;}
+.main{background:var(--theme-main);color:var(--theme-ink);}
+.sidebar{background:var(--theme-sidebar);border-right-color:var(--theme-border);color:var(--theme-sidebar-ink);}
+.sidebar .brand,.sidebar .sidebar-footer{background:var(--theme-sidebar)}
+.track{color:var(--theme-sidebar-ink)}.track.active,.lesson-link.active{background:var(--theme-sidebar-active);box-shadow:inset 3px 0 var(--theme-accent)}
+.lesson-link{color:var(--theme-sidebar-ink)}
+.topbar,.panel,.btn.ghost,.btn.subtle,.modal{background:var(--theme-surface);color:var(--theme-ink);border-color:var(--theme-border);}
+.panel,.panel-header,.topbar{border-color:var(--theme-border);}
+.btn.primary{background:var(--theme-accent);color:#fff;box-shadow:none}.btn.primary:hover{background:var(--theme-strong);}
+:root[data-theme=night] .btn.primary{color:#0b1830}
+.prog-line>div{background:var(--theme-accent)}
+.eyebrow,.step-pill.blue,.page-title .eyebrow{color:var(--theme-accent)}
+.taskbox{background:var(--theme-soft);border-color:var(--theme-accent);color:var(--theme-ink)}
+.coach-guide{background:var(--theme-soft);border-color:var(--theme-border)}
+.coach-guide h3,.coach-guide p,.coach-guide li{color:var(--theme-ink)}
+:root[data-theme=night] .theory ul,:root[data-theme=night] .theory li,
+:root[data-theme=night] .practice-extra,:root[data-theme=night] .result,
+:root[data-theme=night] #lessonIntro,:root[data-theme=night] .breadcrumbs{color:var(--theme-ink)}
+:root[data-theme=night] .btn.subtle,:root[data-theme=night] .btn.ghost{color:var(--theme-ink)}
+:root[data-theme=night] .iconbtn:hover{background:#314565}
+:root[data-theme=night] .result,:root[data-theme=night] #mathPractice input,
+:root[data-theme=night] #mathPractice select,:root[data-theme=night] #mathPractice textarea{color:var(--theme-ink)}
+.theme-picker{margin:18px 0;border:1px solid var(--theme-border);border-radius:14px;padding:12px 14px}
+.theme-picker legend{font-weight:750;padding:0 7px}
+.theme-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.theme-choice{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--theme-surface);color:var(--theme-ink);border:2px solid var(--theme-border);border-radius:12px;min-height:76px;padding:8px 4px;cursor:pointer;font-size:12px;font-weight:700;touch-action:manipulation}
+.theme-choice[aria-pressed=true]{border-color:var(--theme-accent);outline:2px solid var(--theme-accent);outline-offset:1px}
+.theme-swatch{width:30px;height:30px;border-radius:50%;border:2px solid #ffffff88;box-shadow:0 0 0 1px #0002;background:var(--swatch)}
+.theme-choice:focus-visible{outline:3px solid var(--theme-accent)}
+@media(max-width:380px){.theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

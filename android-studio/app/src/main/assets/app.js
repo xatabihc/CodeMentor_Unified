@@ -71,6 +71,24 @@
  function saveDraft(){const current=byId.get(state.lesson);if(current&&!current.exercises&&$('editor')){const v=$('editor').value;if(v!==rec(current.id).draft)setRec(current.id,{draft:v})}}
  function result(kind,title,msg){const h=$('result');h.className='result'+(kind?' '+kind:'');h.replaceChildren();const heading=document.createElement('div');heading.className='result-title';heading.textContent=title;const p=document.createElement('p');p.textContent=msg;h.append(heading,p)}
  function render(){renderTracks();renderList();if(!inTrack().length){$('prevBtn').disabled=true;$('nextBtn').disabled=true;$('progressLabel').textContent='Модули готовятся';$('progressFill').style.width='0%';return;}let l=byId.get(state.lesson)||inTrack()[0];if(!l)return;state.lesson=l.id;let a=inTrack(),idx=a.findIndex(x=>x.id===l.id);let trackTitle=tracks.find(t=>t[0]===state.track)?.[2]||'Python';$('crumb').textContent=trackTitle;$('eyebrow').textContent=(l.module||trackTitle).toUpperCase()+(l.level?' · '+l.level.toUpperCase():'');$('lessonTitle').textContent=l.title;$('lessonIntro').textContent=l.intro||'';$('theoryHeading').textContent=l.title;$('theoryLines').replaceChildren();for(let s of l.theory||[]){const li=document.createElement('li');li.textContent=s;$('theoryLines').appendChild(li)}$('exampleCode').textContent=l.example||'—';$('taskText').textContent=l.task||'';$('fileLabel').textContent=l.track==='linux'?'terminal.sh':l.track==='sql'?'query.sql':'main.py';$('editor').value=rec(l.id).draft??l.starter??'';$('hintBtn').disabled=!(l.hints||[]).length;const hints=$('hints');hints.hidden=true;hints.textContent='';const learning=$('learningDetails');learning.replaceChildren();
+ const guide=window.CodeMentorCoach?.guideFor(l.id);
+ if(guide){
+   const section=document.createElement('section');section.className='coach-guide';section.setAttribute('aria-label','Подробный разбор');
+   function paragraph(title,value){
+     const h=document.createElement('h3');h.textContent=title;
+     const p=document.createElement('p');p.textContent=value;section.append(h,p);
+   }
+   paragraph('Чему научимся',guide.goal);
+   paragraph('Зачем это нужно',guide.why);
+   const h=document.createElement('h3');h.textContent='Разбираем по шагам';section.append(h);
+   const list=document.createElement('ol');
+   for(const step of guide.steps){const li=document.createElement('li');li.textContent=step;list.appendChild(li);}
+   section.append(list);
+   paragraph('Проверь понимание',guide.prediction);
+   paragraph('Типичная ошибка',guide.mistake);
+   paragraph('Твой следующий шаг',guide.try);
+   learning.append(section);
+ }
  if(l.learning){
    for(const [key,title] of [['walkthrough','Разбор примера'],['first','Первый шаг · самопроверка'],['medium','Практика посложнее · самопроверка'],['independent','Самостоятельная практика'],['errors','Частые ошибки'],['review','Вспоминаем пройденное'],['checkpoint','Контроль перед переходом']]){
      const heading=document.createElement('h3');heading.textContent=title;
@@ -143,7 +161,7 @@
  if(l.track==='sql'){const answer=l.sql_expected;if(answer){const ok=normalizeAnswer(answer)===normalizeAnswer(code);finish(l,ok,ok?'SQL-запрос совпал с проверочным образцом. Проверка текстовая — без выполнения SQL.':'Запрос отличается от учебного образца. Проверь столбцы, условия и сортировку. Сейчас используется текстовое сопоставление, без выполнения SQL.');return}result('','SQL: самостоятельная практика','Для данного SQL-урока автоматическая проверка не настроена.');return}
  if(!Array.isArray(l.cases)||!l.cases.length){result('','Учебный материал','Автоматическая проверка для этого урока пока недоступна. Теория и черновик сохраняются; решение можно запустить в установленном Python на ноутбуке.');return}
  checking=true;$('runBtn').disabled=true;const worker=new Worker('worker.js');let done=false;const stop=()=>{if(done)return;done=true;checking=false;$('runBtn').disabled=!['python-subset','text'].includes(byId.get(state.lesson)?.checking?.mode);worker.terminate();};const timeout=setTimeout(()=>{stop();if(state.lesson!==l.id)return;result('error','Выполнение остановлено','Код выполнялся слишком долго или содержит бесконечный цикл. Проверь условия остановки.');},1800);
- worker.onmessage=e=>{if(done)return;clearTimeout(timeout);stop();const d=e.data;if(state.lesson!==l.id)return;if(d.ok)finish(l,true,`Пройдены все проверки (${d.count}). Отличная работа!`);else finish(l,false,d.error?explainError(d.error):`Тест ${d.index}: ожидалось «${d.expected||'(пустой вывод)'}», получилось «${d.actual||'(пустой вывод)'}». Проверь условия и вывод.`)};
+ worker.onmessage=e=>{if(done)return;clearTimeout(timeout);stop();const d=e.data;if(state.lesson!==l.id)return;if(d.ok)finish(l,true,`Пройдены все проверки (${d.count}). Отличная работа!`);else finish(l,false,d.error?(window.CodeMentorCoach?.runtime(d.error,l)||explainError(d.error)):(window.CodeMentorCoach?.mismatch(l,d)||`Тест ${d.index}: ожидалось «${d.expected||'(пустой вывод)'}», получилось «${d.actual||'(пустой вывод)'}». Проверь условия и вывод.`))};
  worker.onerror=()=>{clearTimeout(timeout);stop();if(state.lesson!==l.id)return;result('error','Ошибка движка','Этот вариант Python пока не поддерживается веб-проверкой. Попробуй более простой синтаксис или настольную версию.');};
  worker.postMessage({id:l.id,code,cases:l.cases});
  }

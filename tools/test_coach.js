@@ -5,7 +5,7 @@ require('../www/coach.js');
 const coach=globalThis.CodeMentorCoach;
 const required=['goal','why','steps','prediction','mistake','try'];
 const ids=Object.keys(coach.guides);
-assert(ids.length>=25,'all beginner foundation modules should have worked explanations');
+assert(ids.length>=49,'all beginner foundation modules should have worked explanations');
 for(const id of ids){
   const guide=coach.guideFor(id);
   assert(required.every(key=>guide[key]),id+' missing pedagogical section');
@@ -14,6 +14,9 @@ for(const id of ids){
   assert(guide.mistake.length>=20,id+' must describe a specific beginner error');
 }
 assert(!coach.guideFor('missing-id'));
+assert([...Array(36)].every((_,i)=>coach.guideFor('path'+String(i+1).padStart(2,'0'))),'all 36 beginner Python lessons must be explained');
+for(const prefix of ['la-foundation','st-foundation'])for(let i=1;i<=(prefix==='la-foundation'?6:7);i++)assert(coach.guideFor(prefix+'-'+String(i).padStart(2,'0')),'missing mathematical foundation');
+
 const lesson={id:'path02',cases:[{stdin:[],stdout:'Кот\nПёс'}],hints:['Сверь число команд print()']};
 const wrong=coach.mismatch(lesson,{index:1,expected:'Кот\nПёс',actual:'Кот'});
 assert(wrong.includes('строка 2')&&wrong.includes('Число строк')&&wrong.includes('Сверь число'));
@@ -35,4 +38,8 @@ const blank=coach.math({type:'numeric',expected:3},null,{}, {ok:false});
 assert(blank.includes('не все ячейки'));
 const numeric=coach.math({type:'numeric',expected:3},5,{learning:{walkthrough:'Сначала посчитай все числа'}},{ok:false});
 assert(numeric.includes('Сначала посчитай'));
+const variance=coach.math({type:'statistics',method:'variance',expected:3},1,{}, {ok:false});
+assert(variance.includes('n−1'),variance);
+const bayes=coach.math({type:'statistics',method:'bayes',expected:0.7},0.4,{}, {ok:false});
+assert(bayes.includes('Байеса'),bayes);
 console.log('PASS CodeMentor teaching guides:',ids.length,'and contextual Python/mathematics error explanations');

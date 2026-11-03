@@ -88,7 +88,7 @@
       const heading=document.createElement('h3');heading.className='module-heading';heading.textContent=l.module;list.append(heading);
     }
     const locked=!unlocked(l),done=!!rec(l.id).completed,b=document.createElement('button');
-    b.setAttribute('data-lesson-id',l.id);
+    b.setAttribute?.('data-lesson-id',l.id);
     b.disabled=locked&&activeCourse==='python'&&!l.prerequisites;
     b.className=`lesson-link${state.lesson===l.id?' active':''}${done?' done':''}${locked?' locked':''}`;
     b.innerHTML=`<span class="lesson-icon">${done?'✓':locked?'🔒':i+1}</span><span class="lesson-name"><strong>${esc(l.title)}</strong><small>${esc(l.level||l.module||'Практика')}</small></span>`;

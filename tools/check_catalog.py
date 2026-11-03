@@ -14,8 +14,9 @@ baseline.update(json.loads((root/'curriculum_source/compatibility/2.1-lesson-ids
 by_id={x['id']:x for x in items}
 assert all(by_id[ident]['track']==track for ident,track in baseline.items())
 assert [x['id'] for x in items if x['id'] in baseline]==list(baseline)
-assert all(x.get('checking',{}).get('mode') in {'python-subset','text','unavailable'} for x in items)
+assert all(x.get('checking',{}).get('mode') in {'python-subset','text','unavailable','concept-quiz'} for x in items)
 assert all(x['checking']['mode']!='text' or x['track'] in {'linux','sql'} for x in items)
+assert all(x['checking']['mode']!='concept-quiz' or x.get('quizzes') for x in items)
 for item in items:
     if item['id'].startswith('path') and item['id'] not in baseline:
         assert all(item.get(field) for field in ('intro','theory','example','task','starter','cases','hints'))

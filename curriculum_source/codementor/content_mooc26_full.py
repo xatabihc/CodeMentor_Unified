@@ -69,3 +69,20 @@ for part in PARTS:
             "practiceKind": "concept-and-code-draft",
         })
 assert len(MOOC26) == 98
+# When the supported educational subset can execute a genuine programming
+# exercise, attach multiple behavior tests and keep the conceptual quiz too.
+_PRACTICE = json.loads((_FOLDER / "mooc26_checked_practice.json").read_text(encoding="utf-8"))
+assert len(_PRACTICE) == 17
+_by_id = {lesson["id"]: lesson for lesson in MOOC26}
+assert set(_PRACTICE).issubset(_by_id)
+for _id, _practice in _PRACTICE.items():
+    _lesson = _by_id[_id]
+    _lesson.update({
+        "task": _practice["task"],
+        "starter": _practice["starter"],
+        "solution": _practice["solution"],
+        "cases": _practice["cases"],
+        "practiceKind": "code-and-quiz"
+    })
+    _lesson["learning"]["independent"] = _practice["task"]
+

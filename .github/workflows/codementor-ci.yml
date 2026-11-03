@@ -45,11 +45,16 @@ jobs:
       - name: Test lessons, mathematical checks, storage and frontend
         run: bash tools/test.sh
 
-      - name: Prepare Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install Android SDK Platform 35
-        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
+          test -x "$SDKMANAGER"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
 
       - name: Build debug APK and run Android lint
         working-directory: android-studio

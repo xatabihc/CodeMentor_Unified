@@ -2,7 +2,7 @@
  'use strict';
  const lessons=[...(window.CODEMENTOR_LESSONS||[]),...(window.CODEMENTOR_MATH_LESSONS||[])];
  const byId=new Map(lessons.map(l=>[l.id,l]));
- const tracks=[['path','🌱','С нуля'],['python','🐍','Python'],['mooc','🎓','MOOC 2026'],['debug','🔧','Исправление ошибок'],['projects','🧩','Мини-проекты'],['linux','⌨','Linux'],['sql','🗃','SQLite'],['advanced','📦','Классы и файлы'],['python-data','📊','Python для данных'],['linear-algebra','▦','Линейная алгебра'],['statistics','▥','Первые данные']];
+ const tracks=[['path','🌱','С нуля'],['python','🐍','Python'],['mooc','🎓','MOOC 2026 · 14 частей'],['debug','🔧','Исправление ошибок'],['projects','🧩','Мини-проекты'],['linux','⌨','Linux'],['sql','🗃','SQLite'],['advanced','📦','Классы и файлы'],['python-data','📊','Python для данных'],['linear-algebra','▦','Линейная алгебра'],['statistics','▥','Первые данные']];
  const $=x=>document.getElementById(x);
  let state={records:{},track:'path',lesson:'path01'};
  let activeCourse='python';
@@ -104,7 +104,9 @@
  $('nextBtn').textContent=idx===a.length-1?'Конец раздела':'Дальше →';const unavailable=!['python-subset','text'].includes(l.checking?.mode);$('runBtn').disabled=unavailable;$('runBtn').textContent=unavailable?'Автопроверка недоступна':'▶ Проверить';$('checkStatus').textContent=l.checking?.reason||'Проверка для этого урока ещё не подтверждена.';
  if(unavailable)result('','Самостоятельная практика',l.checking?.reason||'Автоматическая проверка для этого урока ещё не подтверждена.');else if(rec(l.id).completed)result('success','Урок пройден','Решение уже было засчитано. Можешь повторить урок или перейти дальше.');else result('','Готов к практике','Допиши код и нажми «Проверить». Сначала попробуй самостоятельно.');
  const isMath=!!l.exercises;
+ const hasQuiz=Array.isArray(l.quizzes)&&l.quizzes.length>0;
  $('mathPractice').hidden=!isMath;
+ $('conceptPractice').hidden=!hasQuiz;
  for(const selector of ['.editor-head','#editor','#runBtn','#resetBtn'])document.querySelector(selector)?.toggleAttribute('hidden',isMath);
  if(isMath){
    $('checkStatus').textContent='Локальная проверка числового ответа, размера и значений матрицы.';
@@ -113,10 +115,61 @@
    if(l.track==='statistics')window.CodeMentorStatistics.mount($('mathPractice'),{rec,setRec});
    if(!rec(l.id).completed)result('','Математическая практика','Реши три небольших упражнения по порядку.');
  }
+ if(hasQuiz){
+   $('checkStatus').textContent='Проверяются ответы на вопросы; код в редакторе — учебный черновик, а не выполняемая программа. Для полного Python используй CPython.';
+   $('runBtn').disabled=true;
+   $('runBtn').textContent='Запуск кода недоступен в этом уроке';
+   if(!rec(l.id).completed)result('','Проверяем понимание','Пройди вопрос по теме, затем выполни самостоятельную задачу в установленном Python.');
+   mountConcept(l);
+ }
  // Scroll the menu itself, never its ancestors or the lesson document.
  const current=document.querySelector('.lesson-link.active'),menu=$('sidebar');
  if(current&&menu?.getBoundingClientRect){const r=current.getBoundingClientRect(),m=menu.getBoundingClientRect();if(r.bottom>m.bottom||r.top<m.top)menu.scrollTop+=r.top-m.top-90;}
  window.scrollTo(0,0);
+ }
+ function mountConcept(lesson){
+   const host=$('conceptPractice');
+   if(!host)return;
+   host.hidden=false;host.replaceChildren();
+   const questions=lesson.quizzes||[];
+   const el=(tag,content)=>{const n=document.createElement(tag);if(content!==undefined)n.textContent=content;return n;};
+   const remaining=questions.find(q=>!rec(q.id).completed);
+   if(!remaining){
+     const summary=el('p','Вопросы пройдены. Практическая задача на Python остаётся для самостоятельного запуска в CPython.');
+     summary.className='concept-success';host.append(summary);
+     return;
+   }
+   const number=questions.indexOf(remaining)+1;
+   const title=el('h3','Проверка понимания · вопрос '+number+' из '+questions.length);
+   const question=el('p',remaining.question);question.className='concept-question';
+   const answers=el('div');answers.className='concept-choices';
+   const feedback=el('p');feedback.className='concept-feedback';feedback.setAttribute('role','status');
+   host.append(title,question,answers,feedback);
+   for(const [index,label] of remaining.options.entries()){
+     const button=el('button',label);button.type='button';button.className='concept-choice';
+     button.disabled=!unlocked(lesson);
+     button.onclick=()=>{
+       if(!unlocked(lesson))return;
+       const was=rec(remaining.id);
+       setRec(remaining.id,{attempts:(was.attempts||0)+1});
+       if(index!==remaining.answer){
+         feedback.textContent='Пока неверно. '+remaining.wrongExplanation+'\n\nПодсказка: '+remaining.hint;
+         feedback.className='concept-feedback incorrect';
+         return;
+       }
+       setRec(remaining.id,{completed:1,completed_at:was.completed_at||new Date().toISOString()});
+       if(questions.every(q=>rec(q.id).completed)){
+         finish(lesson,true,'Ответ на вопрос подтверждён. Самостоятельный код можно сохранить в черновике; он не проверялся.');
+         mountConcept(lesson);
+       }else{
+         feedback.textContent='Верно! '+remaining.explanation;
+         feedback.className='concept-feedback correct';
+         const next=el('button','Следующий вопрос →');next.type='button';next.className='btn primary';
+         next.onclick=()=>mountConcept(lesson);answers.replaceChildren(next);
+       }
+     };
+     answers.append(button);
+   }
  }
  function mobileNav(){return window.matchMedia('(max-width:840px), (max-width:1024px) and (max-height:500px)').matches}
  function openNav(){
